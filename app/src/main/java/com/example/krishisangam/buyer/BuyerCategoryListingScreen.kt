@@ -1,10 +1,13 @@
 package com.example.krishisangam.buyer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,12 +49,18 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 private val PrimaryGreen = Color(0xFF01AC66)
-private val BackgroundColor = Color(0xFFE8FAF6)
-private val FieldColor = Color(0xFFF4F4F4)
-private val TextDark = Color(0xFF111111)
-private val LightGreen = Color(0xFFDFF8EF)
-private val SoftYellow = Color(0xFFFFF4D6)
-private val YellowText = Color(0xFFB8860B)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextLight = Color(0xFFF5FFF9)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassDark = Color.White.copy(alpha = 0.095f)
+private val GlassCard = Color.White.copy(alpha = 0.105f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
+private val ErrorRed = Color(0xFFFF6B6B)
+private val WishlistRed = Color(0xFFFF4D6D)
+private val SoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
 
 @Composable
 fun BuyerCategoryListingScreen(
@@ -63,6 +76,10 @@ fun BuyerCategoryListingScreen(
     }
 
     var errorMessage by remember {
+        mutableStateOf("")
+    }
+
+    var searchText by remember {
         mutableStateOf("")
     }
 
@@ -91,97 +108,121 @@ fun BuyerCategoryListingScreen(
 
     val localizedCategoryTitle = getLocalizedBuyerCategoryTitle(categoryName)
 
-    val filteredProducts = approvedProducts.filter { product ->
+    val categoryFilteredProducts = approvedProducts.filter { product ->
         productMatchesBuyerCategory(
             productCategory = product.category,
             selectedBuyerCategory = categoryName
         )
     }
 
-    Column(
+    val displayedProducts = categoryFilteredProducts.filter { product ->
+        val query = searchText.trim().lowercase()
+
+        if (query.isBlank()) {
+            true
+        } else {
+            product.name.lowercase().contains(query) ||
+                    product.category.lowercase().contains(query) ||
+                    product.quantity.lowercase().contains(query) ||
+                    product.price.lowercase().contains(query)
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
-            .padding(horizontal = 18.dp, vertical = 18.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        DarkGreen,
+                        BackgroundColor,
+                        DeepGreen
+                    )
+                )
+            )
     ) {
-        CategoryTopBar(
-            title = localizedCategoryTitle,
-            onBackClick = onBackClick
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 18.dp)
+        ) {
+            CategoryTopBar(
+                title = localizedCategoryTitle,
+                onBackClick = onBackClick
+            )
 
-        Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-        CategorySearchBar()
+            CategorySearchBar(
+                searchText = searchText,
+                onSearchTextChange = { newValue ->
+                    searchText = newValue
+                },
+                onClearClick = {
+                    searchText = ""
+                }
+            )
 
-        if (errorMessage.isNotBlank()) {
-            Spacer(modifier = Modifier.height(12.dp))
+            if (errorMessage.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = errorMessage,
+                    fontSize = 13.sp,
+                    color = ErrorRed,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = errorMessage,
-                fontSize = 13.sp,
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                text = stringResource(
+                    R.string.approved_category_listings,
+                    localizedCategoryTitle
+                ),
+                fontSize = 21.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = stringResource(
-                R.string.approved_category_listings,
-                localizedCategoryTitle
-            ),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = stringResource(
-                R.string.products_available_count,
-                filteredProducts.size
-            ),
-            fontSize = 13.sp,
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        if (filteredProducts.isEmpty()) {
-            EmptyCategoryState(
-                categoryName = localizedCategoryTitle
-            )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                items(
-                    items = filteredProducts,
-                    key = { product ->
-                        product.productId.ifBlank {
-                            "${product.name}-${product.category}-${product.price}"
-                        }
-                    }
-                ) { product ->
-                    ApprovedCategoryProductCard(
-                        product = product,
-                        isWishlisted = wishlistItems.contains(product.productId),
-                        onWishlistClick = {
-                            if (wishlistItems.contains(product.productId)) {
-                                wishlistItems.remove(product.productId)
-                            } else {
-                                wishlistItems.add(product.productId)
+            if (displayedProducts.isEmpty()) {
+                EmptyCategoryState(
+                    categoryName = localizedCategoryTitle
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(bottom = 130.dp)
+                ) {
+                    items(
+                        items = displayedProducts,
+                        key = { product ->
+                            product.productId.ifBlank {
+                                "${product.name}-${product.category}-${product.price}"
                             }
-                        },
-                        onAddClick = {
-                            BuyerOrderStore.addOrderFromProduct(product)
                         }
-                    )
+                    ) { product ->
+                        ApprovedCategoryProductCard(
+                            product = product,
+                            isWishlisted = wishlistItems.contains(product.productId),
+                            onWishlistClick = {
+                                if (wishlistItems.contains(product.productId)) {
+                                    wishlistItems.remove(product.productId)
+                                } else {
+                                    wishlistItems.add(product.productId)
+                                }
+                            },
+                            onAddClick = {
+                                BuyerOrderStore.addOrderFromProduct(product)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -239,82 +280,117 @@ fun CategoryTopBar(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.10f))
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = BorderGlass
+                    ),
+                    shape = CircleShape
+                )
+                .clickable {
+                    onBackClick()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextLight
+            )
+        }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Text(
             text = title,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark,
+            fontSize = 25.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = TextLight,
             maxLines = 1
         )
     }
 }
 
 @Composable
-fun CategorySearchBar() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+fun CategorySearchBar(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onClearClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = GlassDark
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
     ) {
-        Card(
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = FieldColor
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 0.dp
-            )
+                .fillMaxSize()
+                .padding(horizontal = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "🔍",
-                    fontSize = 17.sp
-                )
+            Text(
+                text = "🔍",
+                fontSize = 19.sp
+            )
 
-                Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = stringResource(R.string.search),
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1
-                )
+            TextField(
+                value = searchText,
+                onValueChange = { newValue ->
+                    onSearchTextChange(newValue)
+                },
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.search),
+                        color = TextMuted,
+                        fontSize = 14.sp
+                    )
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = AccentYellow,
+                    focusedTextColor = TextLight,
+                    unfocusedTextColor = TextLight,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted
+                ),
+                modifier = Modifier.weight(1f)
+            )
 
+            if (searchText.isNotBlank()) {
                 Text(
-                    text = "🎙️",
-                    fontSize = 16.sp
+                    text = "×",
+                    color = TextMuted,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        onClearClick()
+                    }
                 )
             }
         }
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Text(
-            text = "＋",
-            color = PrimaryGreen,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -326,68 +402,88 @@ fun ApprovedCategoryProductCard(
     onAddClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.height(235.dp),
-        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier
+            .height(220.dp)
+            .shadow(
+                elevation = 7.dp,
+                shape = RoundedCornerShape(22.dp)
+            ),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(13.dp)
+                .padding(12.dp)
         ) {
-            Text(
-                text = if (isWishlisted) "♥" else "♡",
-                color = if (isWishlisted) Color.Red else PrimaryGreen,
-                fontSize = 21.sp,
-                modifier = Modifier.clickable {
-                    onWishlistClick()
-                }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = product.category.ifBlank {
+                        stringResource(R.string.product)
+                    },
+                    fontSize = 10.sp,
+                    color = TextMuted,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = if (isWishlisted) "♥" else "♡",
+                    color = if (isWishlisted) WishlistRed else AccentYellow,
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        onWishlistClick()
+                    }
+                )
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(50.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = product.emoji.ifBlank { "🌾" },
-                    fontSize = 42.sp
+                    fontSize = 38.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(7.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = product.name.ifBlank {
                     stringResource(R.string.unnamed_product)
                 },
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight,
                 maxLines = 1
             )
 
-            Text(
-                text = product.category.ifBlank {
-                    stringResource(R.string.product)
-                },
-                fontSize = 11.sp,
-                color = Color.Gray,
-                maxLines = 1
-            )
+            Spacer(modifier = Modifier.height(3.dp))
 
             Text(
                 text = product.quantity.ifBlank {
                     stringResource(R.string.quantity_not_added)
                 },
-                fontSize = 10.sp,
-                color = Color.Gray,
+                fontSize = 11.sp,
+                color = TextMuted,
+                fontWeight = FontWeight.Medium,
                 maxLines = 1
             )
 
@@ -397,13 +493,13 @@ fun ApprovedCategoryProductCard(
                 text = product.price.ifBlank {
                     stringResource(R.string.price_not_added)
                 },
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow,
                 maxLines = 1
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(7.dp))
 
             Text(
                 text = stringResource(
@@ -411,11 +507,19 @@ fun ApprovedCategoryProductCard(
                     product.trustScore
                 ),
                 fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = YellowText,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow,
+                maxLines = 1,
                 modifier = Modifier
                     .background(SoftYellow, RoundedCornerShape(16.dp))
-                    .padding(horizontal = 7.dp, vertical = 3.dp)
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = AccentYellow.copy(alpha = 0.22f)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -425,11 +529,14 @@ fun ApprovedCategoryProductCard(
             ) {
                 Text(
                     text = stringResource(R.string.verified),
-                    color = PrimaryGreen,
+                    color = Color.White,
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier
-                        .background(LightGreen, RoundedCornerShape(18.dp))
+                        .background(
+                            PrimaryGreen.copy(alpha = 0.85f),
+                            RoundedCornerShape(18.dp)
+                        )
                         .padding(horizontal = 8.dp, vertical = 5.dp)
                 )
 
@@ -440,6 +547,13 @@ fun ApprovedCategoryProductCard(
                         .size(30.dp)
                         .clip(CircleShape)
                         .background(PrimaryGreen)
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.18f)
+                            ),
+                            shape = CircleShape
+                        )
                         .clickable {
                             onAddClick()
                         },
@@ -449,7 +563,7 @@ fun ApprovedCategoryProductCard(
                         text = "+",
                         color = Color.White,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }
@@ -463,12 +577,16 @@ fun EmptyCategoryState(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -482,7 +600,7 @@ fun EmptyCategoryState(
                 fontSize = 45.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = stringResource(
@@ -490,16 +608,17 @@ fun EmptyCategoryState(
                     categoryName
                 ),
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = stringResource(R.string.approved_products_after_verification),
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextMuted,
+                fontWeight = FontWeight.Medium
             )
         }
     }

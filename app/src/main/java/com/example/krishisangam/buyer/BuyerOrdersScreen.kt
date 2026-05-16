@@ -1,7 +1,10 @@
 package com.example.krishisangam.buyer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,21 +14,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,15 +44,27 @@ import androidx.compose.ui.unit.sp
 import com.example.krishisangam.R
 
 private val OrderPrimaryGreen = Color(0xFF01AC66)
-private val OrderBackgroundColor = Color(0xFFE8FAF6)
-private val OrderTextDark = Color(0xFF111111)
-private val OrderCardBg = Color(0xFFFFFFFF)
-private val OrderLightGray = Color(0xFFF4F4F4)
-private val OrderLightGreen = Color(0xFFDFF8EF)
+private val OrderBackgroundColor = Color(0xFF003D22)
+private val OrderDeepGreen = Color(0xFF002514)
+private val OrderDarkGreen = Color(0xFF005C32)
+private val OrderAccentYellow = Color(0xFFFFC107)
+private val OrderTextLight = Color(0xFFF5FFF9)
+private val OrderTextMuted = Color(0xFFB9D8C7)
+private val OrderGlassDark = Color.White.copy(alpha = 0.095f)
+private val OrderGlassCard = Color.White.copy(alpha = 0.105f)
+private val OrderBorderGlass = Color.White.copy(alpha = 0.16f)
+private val OrderDialogGreen = Color(0xFF123D2B)
+private val OrderDialogText = Color(0xFFD8EDE3)
+private val OrderSoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
+private val OrderDeleteRed = Color(0xFFFF6B6B)
 
 @Composable
 fun BuyerOrdersScreen() {
     val orders = BuyerOrderStore.orders
+
+    var showCheckoutDialog by remember {
+        mutableStateOf(false)
+    }
 
     val subtotal by remember {
         derivedStateOf {
@@ -58,46 +80,131 @@ fun BuyerOrdersScreen() {
     val tax = subtotal * 0.05
     val totalAmount = subtotal + packagingCharge + logisticsCharge + platformFee + tax
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(OrderBackgroundColor)
-            .padding(horizontal = 18.dp, vertical = 18.dp)
-    ) {
-        BuyerOrdersTopBar()
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        if (orders.isEmpty()) {
-            BuyerEmptyOrdersMessage()
-        } else {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                orders.forEach { order ->
-                    BuyerOrderItemCard(
-                        order = order
+    if (showCheckoutDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showCheckoutDialog = false
+            },
+            containerColor = OrderDialogGreen,
+            titleContentColor = OrderTextLight,
+            textContentColor = OrderDialogText,
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCheckoutDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = OrderAccentYellow,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "Checkout Coming Soon",
+                    color = OrderTextLight,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 22.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "🛒",
+                        fontSize = 36.sp
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Your order summary is ready.",
+                        color = OrderTextLight,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Payment and final order confirmation will be connected in the next version.",
+                        color = OrderDialogText,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Estimated total: ₹${totalAmount.toInt()}",
+                        color = OrderAccentYellow,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 15.sp
+                    )
                 }
+            }
+        )
+    }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                BuyerBillSummaryCard(
-                    subtotal = subtotal,
-                    packagingCharge = packagingCharge,
-                    logisticsCharge = logisticsCharge,
-                    platformFee = platformFee,
-                    tax = tax,
-                    totalAmount = totalAmount
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        OrderDarkGreen,
+                        OrderBackgroundColor,
+                        OrderDeepGreen
+                    )
                 )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 18.dp)
+        ) {
+            BuyerOrdersTopBar()
 
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-                BuyerCheckoutButton()
+            if (orders.isEmpty()) {
+                BuyerEmptyOrdersMessage()
+            } else {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(bottom = 110.dp)
+                ) {
+                    orders.forEach { order ->
+                        BuyerOrderItemCard(
+                            order = order
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    BuyerBillSummaryCard(
+                        subtotal = subtotal,
+                        packagingCharge = packagingCharge,
+                        logisticsCharge = logisticsCharge,
+                        platformFee = platformFee,
+                        tax = tax,
+                        totalAmount = totalAmount
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    BuyerCheckoutButton(
+                        onClick = {
+                            showCheckoutDialog = true
+                        }
+                    )
+                }
             }
         }
     }
@@ -115,29 +222,37 @@ fun BuyerOrdersTopBar() {
             Text(
                 text = stringResource(R.string.my_orders),
                 fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = OrderTextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = OrderTextLight
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(5.dp))
 
             Text(
                 text = stringResource(R.string.products_added_from_approved_farmer_listings),
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = OrderTextMuted,
+                lineHeight = 19.sp
             )
         }
 
         Box(
             modifier = Modifier
-                .size(42.dp)
+                .size(46.dp)
                 .clip(CircleShape)
-                .background(OrderLightGreen),
+                .background(OrderGlassDark)
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = OrderBorderGlass
+                    ),
+                    shape = CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "🛒",
-                fontSize = 22.sp
+                fontSize = 23.sp
             )
         }
     }
@@ -151,12 +266,16 @@ fun BuyerEmptyOrdersMessage() {
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(22.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = OrderGlassCard
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = OrderBorderGlass
             ),
             elevation = CardDefaults.cardElevation(
-                defaultElevation = 5.dp
+                defaultElevation = 3.dp
             )
         ) {
             Column(
@@ -175,16 +294,17 @@ fun BuyerEmptyOrdersMessage() {
                 Text(
                     text = stringResource(R.string.no_orders_added_yet),
                     fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OrderTextDark
+                    fontWeight = FontWeight.ExtraBold,
+                    color = OrderTextLight
                 )
 
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = stringResource(R.string.add_approved_products_from_marketplace),
                     fontSize = 13.sp,
-                    color = Color.Gray
+                    color = OrderTextMuted,
+                    lineHeight = 19.sp
                 )
             }
         }
@@ -196,13 +316,22 @@ fun BuyerOrderItemCard(
     order: BuyerOrderItem
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(22.dp)
+            ),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = OrderCardBg
+            containerColor = OrderGlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = OrderBorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 2.dp
         )
     ) {
         Row(
@@ -214,8 +343,15 @@ fun BuyerOrderItemCard(
             Box(
                 modifier = Modifier
                     .size(58.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(OrderLightGray),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = OrderBorderGlass
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -232,15 +368,15 @@ fun BuyerOrderItemCard(
                 Text(
                     text = order.name,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OrderTextDark,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = OrderTextLight,
                     maxLines = 1
                 )
 
                 Text(
                     text = order.type,
                     fontSize = 11.sp,
-                    color = Color.Gray,
+                    color = OrderTextMuted,
                     maxLines = 1
                 )
 
@@ -249,8 +385,8 @@ fun BuyerOrderItemCard(
                 Text(
                     text = order.price,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OrderPrimaryGreen,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = OrderAccentYellow,
                     maxLines = 1
                 )
             }
@@ -259,12 +395,12 @@ fun BuyerOrderItemCard(
                 order = order
             )
 
-            Spacer(modifier = Modifier.size(10.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             Text(
                 text = "🗑",
                 fontSize = 18.sp,
-                color = Color.Red,
+                color = OrderDeleteRed,
                 modifier = Modifier.clickable {
                     BuyerOrderStore.removeOrder(order)
                 }
@@ -282,9 +418,16 @@ fun BuyerQuantityControl(
     ) {
         Box(
             modifier = Modifier
-                .size(26.dp)
+                .size(27.dp)
                 .clip(CircleShape)
-                .background(OrderLightGray)
+                .background(Color.White.copy(alpha = 0.12f))
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = OrderBorderGlass
+                    ),
+                    shape = CircleShape
+                )
                 .clickable {
                     BuyerOrderStore.decreaseQuantity(order)
                 },
@@ -293,24 +436,31 @@ fun BuyerQuantityControl(
             Text(
                 text = "-",
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = OrderTextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = OrderTextLight
             )
         }
 
         Text(
             text = order.quantity.toString(),
             fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = OrderTextDark,
+            fontWeight = FontWeight.ExtraBold,
+            color = OrderTextLight,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
         Box(
             modifier = Modifier
-                .size(26.dp)
+                .size(27.dp)
                 .clip(CircleShape)
                 .background(OrderPrimaryGreen)
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.18f)
+                    ),
+                    shape = CircleShape
+                )
                 .clickable {
                     BuyerOrderStore.increaseQuantity(order)
                 },
@@ -319,7 +469,7 @@ fun BuyerQuantityControl(
             Text(
                 text = "+",
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 color = Color.White
             )
         }
@@ -336,13 +486,22 @@ fun BuyerBillSummaryCard(
     totalAmount: Double
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(24.dp)
+            ),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = OrderGlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = OrderBorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -351,8 +510,8 @@ fun BuyerBillSummaryCard(
             Text(
                 text = stringResource(R.string.bill_split),
                 fontSize = 21.sp,
-                fontWeight = FontWeight.Bold,
-                color = OrderTextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = OrderTextLight
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -393,7 +552,7 @@ fun BuyerBillSummaryCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             HorizontalDivider(
-                color = Color(0xFFE0E0E0)
+                color = Color.White.copy(alpha = 0.16f)
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -405,16 +564,16 @@ fun BuyerBillSummaryCard(
                 Text(
                     text = stringResource(R.string.total),
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OrderTextDark,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = OrderTextLight,
                     modifier = Modifier.weight(1f)
                 )
 
                 Text(
                     text = "₹${totalAmount.toInt()}",
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OrderPrimaryGreen
+                    fontWeight = FontWeight.ExtraBold,
+                    color = OrderAccentYellow
                 )
             }
 
@@ -423,7 +582,8 @@ fun BuyerBillSummaryCard(
             Text(
                 text = stringResource(R.string.transparent_charges_message),
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = OrderTextMuted,
+                lineHeight = 18.sp
             )
         }
     }
@@ -440,7 +600,7 @@ fun BuyerBillRow(
         Text(
             text = title,
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = OrderTextMuted,
             modifier = Modifier.weight(1f)
         )
 
@@ -448,28 +608,49 @@ fun BuyerBillRow(
             text = amount,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
-            color = OrderTextDark
+            color = OrderTextLight
         )
     }
 }
 
 @Composable
-fun BuyerCheckoutButton() {
+fun BuyerCheckoutButton(
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(OrderPrimaryGreen)
+            .height(56.dp)
+            .shadow(
+                elevation = 10.dp,
+                shape = RoundedCornerShape(18.dp)
+            )
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        OrderPrimaryGreen,
+                        Color(0xFF00985B),
+                        Color(0xFF007A49)
+                    )
+                )
+            )
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color.White.copy(alpha = 0.18f)
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
             .clickable {
-                // Later: connect mock payment / order confirmation
+                onClick()
             },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = stringResource(R.string.proceed_to_checkout),
             color = Color.White,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
             fontSize = 15.sp
         )
     }
