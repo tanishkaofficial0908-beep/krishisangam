@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Main app theme after splash -->
+    <style name="Base.Theme.KrishiSangam" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
+        <item name="android:statusBarColor">@color/app_background</item>
+    </style>
+
+    <!-- Splash screen theme -->
+    <style name="Theme.App.KrishiSangam" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_screen_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/krishi_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_icon_bg</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.KrishiSangam</item>
+    </style>
+
+</resources>

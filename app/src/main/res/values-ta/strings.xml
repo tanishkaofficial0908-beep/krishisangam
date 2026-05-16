@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">கிருஷி சங்கம்</string>
+
+    <string name="home">முகப்பு</string>
+    <string name="farmers">விவசாயிகள்</string>
+    <string name="marketplace">சந்தை</string>
+    <string name="orders">ஆர்டர்கள்</string>
+    <string name="profile">சுயவிவரம்</string>
+
+    <string name="app_language">ஆப் மொழி</string>
+    <string name="choose_app_language">ஆப் மொழியைத் தேர்வு செய்யவும்</string>
+    <string name="select_preferred_language">உங்கள் விருப்ப மொழியைத் தேர்வு செய்யவும்</string>
+    <string name="select">தேர்வு</string>
+    <string name="language_selected">தேர்ந்தெடுக்கப்பட்டது</string>
+
+    <string name="buyer">வாங்குபவர்</string>
+    <string name="manage_buyer_account">உங்கள் வாங்குபவர் கணக்கை நிர்வகிக்கவும்</string>
+    <string name="buyer_account">வாங்குபவர் கணக்கு</string>
+    <string name="account_options">கணக்கு விருப்பங்கள்</string>
+    <string name="change_app_language">ஆப் மொழியை மாற்றவும்</string>
+
+    <string name="wishlist">விருப்பப்பட்டியல்</string>
+    <string name="view_saved_products">சேமித்த தயாரிப்புகளைப் பார்க்கவும்</string>
+    <string name="my_orders">என் ஆர்டர்கள்</string>
+    <string name="track_product_orders">உங்கள் தயாரிப்பு ஆர்டர்களை கண்காணிக்கவும்</string>
+    <string name="delivery_location">டெலிவரி இடம்</string>
+    <string name="manage_delivery_address">டெலிவரி முகவரியை நிர்வகிக்கவும்</string>
+    <string name="notifications">அறிவிப்புகள்</string>
+    <string name="manage_alerts">அலர்ட்கள் மற்றும் அப்டேட்களை நிர்வகிக்கவும்</string>
+    <string name="help_support">உதவி மற்றும் ஆதரவு</string>
+    <string name="contact_support">கிருஷி சங்கம் ஆதரவைத் தொடர்பு கொள்ளவும்</string>
+    <string name="logout">லாக்அவுட்</string>
+    <string name="sign_out_account">உங்கள் கணக்கிலிருந்து வெளியேறவும்</string>
+    <string name="approved_category_listings">அங்கீகரிக்கப்பட்ட %1$s பட்டியல்கள்</string>
+    <string name="products_available_count">%1$d தயாரிப்புகள் உள்ளன</string>
+    <string name="grain">தானியம்</string>
+    <string name="fruits">பழங்கள்</string>
+    <string name="vegetables">காய்கறிகள்</string>
+    <string name="pulses">பருப்புகள்</string>
+    <string name="search">தேடல்</string>
+    <string name="unnamed_product">பெயரில்லா தயாரிப்பு</string>
+    <string name="product">தயாரிப்பு</string>
+    <string name="quantity_not_added">அளவு சேர்க்கப்படவில்லை</string>
+    <string name="price_not_added">விலை சேர்க்கப்படவில்லை</string>
+    <string name="trust_score_with_value">நம்பிக்கை %1$d/100</string>
+    <string name="verified">சரிபார்க்கப்பட்டது</string>
+    <string name="no_category_products_yet">இன்னும் %1$s தயாரிப்புகள் இல்லை</string>
+    <string name="approved_products_after_verification">நோட் மேனேஜர் சரிபார்ப்புக்குப் பிறகு அங்கீகரிக்கப்பட்ட தயாரிப்புகள் இங்கே தோன்றும்.</string>
+    <string name="manage_manager_account">Manage your node manager account</string>
+    <string name="verifications">Verifications</string>
+    <string name="review_farmer_listings">Review farmer product listings</string>
+    <string name="manage_orders_dispatch">Manage orders and dispatch</string>
+    <string name="payments">Payments</string>
+    <string name="track_payments_payouts">Track payments and farmer payouts</string>
+    <string name="view_farmer_directory">View farmer directory</string>
+    <string name="manager_account">Manager Account</string>
+</resources>

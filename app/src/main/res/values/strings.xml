@@ -1,0 +1,370 @@
+<resources>
+
+    <!-- App Basic -->
+    <string name="app_name">Krishi Sangam</string>
+
+    <!-- Common Navigation -->
+    <string name="home">Home</string>
+    <string name="farmers">Farmers</string>
+    <string name="marketplace">Marketplace</string>
+    <string name="orders">Orders</string>
+    <string name="profile">Profile</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
+    <string name="earnings">Earnings</string>
+    <string name="payments">Payments</string>
+
+    <!-- Language -->
+    <string name="app_language">App Language</string>
+    <string name="choose_app_language">Choose App Language</string>
+    <string name="select_preferred_language">Select your preferred language</string>
+    <string name="select">Select</string>
+    <string name="language_selected">Selected</string>
+    <string name="change_app_language">Change app language</string>
+
+    <!-- Roles -->
+    <string name="buyer">Buyer</string>
+    <string name="farmer">Farmer</string>
+    <string name="node_manager">Node Manager</string>
+    <string name="manager">Manager</string>
+
+    <!-- Common Account/Profile -->
+    <string name="buyer_account">Buyer Account</string>
+    <string name="farmer_account">Farmer Account</string>
+    <string name="manager_account">Manager Account</string>
+    <string name="manage_buyer_account">Manage your buyer account</string>
+    <string name="manage_farmer_account">Manage your farmer account</string>
+    <string name="manage_manager_account">Manage your node manager account</string>
+    <string name="account_options">Account Options</string>
+    <string name="wishlist">Wishlist</string>
+    <string name="view_saved_products">View saved products</string>
+    <string name="my_orders">My Orders</string>
+    <string name="track_product_orders">Track your product orders</string>
+    <string name="delivery_location">Delivery Location</string>
+    <string name="manage_delivery_address">Manage your delivery address</string>
+    <string name="notifications">Notifications</string>
+    <string name="manage_alerts">Manage alerts and updates</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="contact_support">Contact Krishi Sangam support</string>
+    <string name="logout">Logout</string>
+    <string name="sign_out_account">Sign out from your account</string>
+    <string name="no_email_found">No email found</string>
+
+    <!-- Buyer Home -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="buyer_home">Buyer Home</string>
+    <string name="search_products">Search products...</string>
+    <string name="search_wheat_rice_vegetables">Search wheat, rice, vegetables...</string>
+    <string name="categories">Categories</string>
+    <string name="see_all">See All</string>
+    <string name="todays_offers">Today’s Offers</string>
+    <string name="bulk_crop_deal">Bulk Crop Deal</string>
+    <string name="up_to_discount">Up to 12%</string>
+    <string name="up_to_lower_logistics_cost">Up to 12% lower logistics cost</string>
+    <string name="for_community_orders">For community orders</string>
+    <string name="tap_category_to_view_listings">Tap a category above to view available farmer listings.</string>
+
+    <!-- Categories / Crops -->
+    <string name="grain">Grain</string>
+    <string name="grains">Grains</string>
+    <string name="fruits">Fruits</string>
+    <string name="fruit">Fruit</string>
+    <string name="vegetables">Vegetables</string>
+    <string name="vegetable">Vegetable</string>
+    <string name="pulses">Pulses</string>
+    <string name="pulse">Pulse</string>
+    <string name="rice">Rice</string>
+    <string name="wheat">Wheat</string>
+    <string name="tomato">Tomato</string>
+    <string name="capsicum">Capsicum</string>
+    <string name="sharbati_wheat">Sharbati Wheat</string>
+    <string name="fresh_vegetables">Fresh Vegetables</string>
+    <string name="grade_a_wheat">Grade A Wheat</string>
+    <string name="basmati_rice">Basmati Rice</string>
+    <string name="bulk_onion">Bulk Onion</string>
+    <string name="other">Other</string>
+
+    <!-- Buyer Category Listing -->
+    <string name="failed_to_load_products">Failed to load products</string>
+    <string name="approved_category_listings">Approved %1$s Listings</string>
+    <string name="products_available_count">%1$d products available</string>
+    <string name="unnamed_product">Unnamed Product</string>
+    <string name="product">Product</string>
+    <string name="category">Category</string>
+    <string name="quantity_not_added">Qty not added</string>
+    <string name="price_not_added">Price not added</string>
+    <string name="trust_score_with_value">Trust %1$d/100</string>
+    <string name="verified">Verified</string>
+    <string name="no_category_products_yet">No %1$s products yet</string>
+    <string name="approved_products_after_verification">Approved products will appear here after Node Manager verification.</string>
+
+    <!-- Buyer Farmers Screen -->
+    <string name="farmer_directory">Farmer Directory</string>
+    <string name="verified_farmers_trust_scores">Verified farmers with trust scores</string>
+    <string name="trust_score">Trust Score</string>
+    <string name="products">Products</string>
+    <string name="earned">Earned</string>
+    <string name="verified_farmer">Verified Farmer</string>
+    <string name="premium_farmer">Premium Farmer</string>
+    <string name="main_crops">Main Crops</string>
+    <string name="main_crops_with_value">Main Crops: %1$s</string>
+    <string name="trust">Trust</string>
+    <string name="percentage_value">%1$d%%</string>
+    <string name="wheat_rice">Wheat, Rice</string>
+    <string name="rice_pulses">Rice, Pulses</string>
+    <string name="wheat_vegetables">Wheat, Vegetables</string>
+
+    <!-- Buyer Marketplace -->
+    <string name="failed_to_load_marketplace_products">Failed to load marketplace products</string>
+    <string name="marketplace_title">Marketplace</string>
+    <string name="verified_farmer_listings_approved_by_agro_node">Verified farmer listings approved by Agro Node</string>
+    <string name="verified_bulk_deals">Verified Bulk Deals</string>
+    <string name="up_to_20_off">Up to 20% off</string>
+    <string name="on_agro_node_approved_listings">on Agro Node approved listings</string>
+    <string name="approved_products">Approved Products</string>
+    <string name="items_count">%1$d items</string>
+    <string name="agro_node_approved">Agro Node Approved</string>
+    <string name="no_approved_products_yet">No approved products yet</string>
+    <string name="products_after_agro_node_approval">Products will appear here after Agro Node approval.</string>
+    <string name="no_location">No location</string>
+    <string name="add_to_order">Add to Order</string>
+    <string name="off">OFF</string>
+    <string name="category_quantity_format">%1$s • %2$s</string>
+    <string name="farmer_name_with_icon">👨‍🌾 %1$s</string>
+    <string name="location_with_icon">📍 %1$s</string>
+
+    <!-- Buyer Orders -->
+    <string name="products_added_from_approved_farmer_listings">Products added from approved farmer listings</string>
+    <string name="no_orders_added_yet">No orders added yet</string>
+    <string name="add_approved_products_from_marketplace">Add approved products from Marketplace.</string>
+    <string name="my_cart">My Cart</string>
+    <string name="cart_empty">Your cart is empty</string>
+    <string name="order_summary">Order Summary</string>
+    <string name="bill_split">Bill Split</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="product_subtotal">Product subtotal</string>
+    <string name="packaging_charge">Packaging Charge</string>
+    <string name="logistics_charge">Logistics Charge</string>
+    <string name="platform_fee">Platform Fee</string>
+    <string name="tax">Tax</string>
+    <string name="tax_5">Tax (5%)</string>
+    <string name="total">Total</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="place_order">Place Order</string>
+    <string name="proceed_to_checkout">Proceed to Checkout</string>
+    <string name="transparent_charges_message">Transparent charges help buyers understand product, packaging and logistics cost.</string>
+
+    <!-- Buyer Search -->
+    <string name="recent_searches">Recent Searches</string>
+    <string name="similar_matches">Similar Matches</string>
+    <string name="no_products_found">No products found</string>
+
+    <!-- Farmer Dashboard / Home -->
+    <string name="farmer_dashboard">Farmer Dashboard</string>
+    <string name="your_farm_performance_overview">Your farm performance overview</string>
+    <string name="active_orders">Active Orders</string>
+    <string name="total_earnings">Total Earnings</string>
+    <string name="pending_payment">Pending Payment</string>
+    <string name="after_delivery">After delivery</string>
+    <string name="approved_pending_summary">%1$d approved • %2$d pending</string>
+    <string name="completed_count">%1$d completed</string>
+    <string name="good_improves_with_deliveries">Good • Improves with successful deliveries</string>
+    <string name="recent_orders">Recent Orders</string>
+    <string name="ready_for_dispatch">Ready for dispatch</string>
+    <string name="payment_pending">Payment pending</string>
+    <string name="order_product_format">%1$s • %2$s</string>
+    <string name="product_status">Product Status</string>
+    <string name="pending_verification">Pending Verification</string>
+
+    <!-- Farmer Products -->
+    <string name="my_products">My Products</string>
+    <string name="manage_product_listings">Manage your product listings</string>
+    <string name="manage_product_listings_long">Manage your produce listings</string>
+    <string name="add_product">Add Product</string>
+    <string name="add">Add</string>
+    <string name="add_with_plus">+ Add</string>
+    <string name="total_products">Total Products</string>
+    <string name="approved">Approved</string>
+    <string name="pending">Pending</string>
+    <string name="rejected">Rejected</string>
+    <string name="approve">Approve</string>
+    <string name="reject">Reject</string>
+    <string name="all">All</string>
+    <string name="all_categories">All Categories</string>
+    <string name="available">Available</string>
+    <string name="farmer_trust">Farmer Trust</string>
+    <string name="farmer_trust_with_score">Farmer Trust: %1$d/100</string>
+    <string name="available_quantity_format">%1$s available</string>
+    <string name="no_products_yet">No products yet</string>
+    <string name="tap_add_to_list_first_product">Tap + Add to list your first product</string>
+
+    <!-- Farmer Add Product -->
+    <string name="list_new_product">List New Product</string>
+    <string name="list_your_produce_reach_buyers">List your produce and reach more buyers</string>
+    <string name="product_info">Product Info</string>
+    <string name="pricing">Pricing</string>
+    <string name="photos">Photos</string>
+    <string name="what_are_you_listing">What are you listing?</string>
+    <string name="product_name">Product Name</string>
+    <string name="quantity">Quantity</string>
+    <string name="unit">Unit</string>
+    <string name="crop_year">Crop Year</string>
+    <string name="product_description">Product Description</string>
+    <string name="location">Location</string>
+    <string name="product_images">Product Images</string>
+    <string name="pricing_details">Pricing Details</string>
+    <string name="add_selling_price_charges">Add selling price and charges for transparent billing.</string>
+    <string name="product_price">Product Price</string>
+    <string name="mandi_price">Mandi Price</string>
+    <string name="farmer_expected_price">Farmer Expected Price</string>
+    <string name="krishi_sangam_price">Krishi Sangam Price</string>
+    <string name="krishi_sangam">Krishi Sangam</string>
+    <string name="profit_gain">Profit Gain</string>
+    <string name="fairness_score">Fairness Score</string>
+    <string name="buyer_will_see_bill_split">Buyer will see a transparent bill including product price, packaging and logistics.</string>
+    <string name="product_photos">Product Photos</string>
+    <string name="photo_placeholders_message">Photo placeholders are shown for demo.</string>
+    <string name="connect_camera_gallery_later">Connect camera/gallery upload later.</string>
+    <string name="main_photo">Main Photo</string>
+    <string name="add_photo">Add Photo</string>
+    <string name="more">More</string>
+    <string name="preview">Preview</string>
+    <string name="status_pending_verification">Status: Pending Verification</string>
+    <string name="successfully_listed">Successfully Listed</string>
+    <string name="product_sent_to_agro_node_manager">Your product has been sent to Agro Node Manager for verification.</string>
+    <string name="submit">Submit</string>
+    <string name="submitting">Submitting...</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="go_to_my_products">Go to My Products</string>
+
+    <!-- Farmer Add Product Placeholders / Validation -->
+    <string name="product_name_placeholder">Wheat High Quality</string>
+    <string name="quantity_placeholder">100</string>
+    <string name="unit_placeholder">Kg / Quintal</string>
+    <string name="crop_year_placeholder">2024-25</string>
+    <string name="product_description_placeholder">High quality crop, cleaned and sorted...</string>
+    <string name="location_placeholder">Bhopal, Madhya Pradesh</string>
+    <string name="please_enter_product_name">Please enter product name</string>
+    <string name="please_enter_quantity">Please enter quantity</string>
+    <string name="please_enter_valid_farmer_expected_price">Please enter valid farmer expected price</string>
+    <string name="user_not_logged_in">User not logged in</string>
+    <string name="failed_to_list_product">Failed to list product</string>
+
+    <!-- Farmer Pricing Intelligence -->
+    <string name="pricing_intelligence">Pricing Intelligence</string>
+    <string name="set_fair_price_using_mandi_rate">Set a fair price using mandi rate and Krishi Sangam suggested price.</string>
+    <string name="current_wholesale_rate">Current wholesale rate</string>
+    <string name="suggested_fair_price">Suggested fair price</string>
+    <string name="allowed_range">Allowed Range</string>
+    <string name="price_display_only_message">Mandi price and Krishi Sangam price are display-only. Farmer can only edit expected price.</string>
+    <string name="price_analysis">Price Analysis</string>
+    <string name="difference_from_mandi">Difference from Mandi</string>
+    <string name="difference_from_suggested">Difference from Suggested</string>
+    <string name="farmer_profit_gain">Farmer Profit Gain</string>
+    <string name="score_out_of_100">%1$d/100</string>
+    <string name="out_of_100">/100</string>
+    <string name="underpriced_by_farmer">Underpriced by farmer</string>
+    <string name="overpriced_demand_risk">Overpriced demand risk</string>
+    <string name="above_suggested_but_acceptable">Above suggested but acceptable</string>
+    <string name="fair_price">Fair price</string>
+    <string name="price_with_value">Price: ₹%1$d/%2$s</string>
+    <string name="rupee_per_unit">₹%1$d/%2$s</string>
+    <string name="rupee_range_per_unit">₹%1$d - ₹%2$d/%3$s</string>
+    <string name="overpriced_demand_risk_limit">Overpriced demand risk. Price must be below ₹%1$d/%2$s</string>
+    <string name="too_low_price_limit">Too low price. Enter price above ₹%1$d/%2$s</string>
+    <string name="price_must_be_between">Price must be between ₹%1$d and ₹%2$d/%3$s</string>
+
+    <!-- Farmer Earnings -->
+    <string name="your_income_payment_history">Your income and payment history</string>
+    <string name="view_earnings_payments">View earnings and payments</string>
+    <string name="total_earned">Total Earned</string>
+    <string name="pending_release">Pending Release</string>
+    <string name="completed_orders">Completed Orders</string>
+    <string name="payment_history">Payment History</string>
+    <string name="track_received_pending_payments">Track your received and pending payments</string>
+    <string name="no_completed_payments_yet">No completed payments yet</string>
+    <string name="good">Good</string>
+    <string name="improving">Improving</string>
+    <string name="trust_score_description">Your trust score shows delivery reliability and product quality. It increases with every completed order.</string>
+    <string name="order_buyer_format">%1$s • Buyer: %2$s</string>
+    <string name="first_half">1st Half</string>
+    <string name="second_half">2nd Half</string>
+    <string name="completed">Completed</string>
+
+    <!-- Farmer Orders -->
+    <string name="orders_for_your_products">Orders for your products</string>
+    <string name="no_orders_yet">No orders yet</string>
+    <string name="orders_received_for_your_products">Orders received for your products</string>
+    <string name="ready">Ready</string>
+    <string name="transit">Transit</string>
+    <string name="done">Done</string>
+    <string name="in_transit">In Transit</string>
+    <string name="delivered">Delivered</string>
+    <string name="amount">Amount</string>
+    <string name="node">Node</string>
+    <string name="payment_split">Payment Split</string>
+    <string name="buyer_name_format">Buyer: %1$s</string>
+    <string name="date_format">Date: %1$s</string>
+    <string name="first_half_format">1st Half: %1$s</string>
+    <string name="second_half_format">2nd Half: %1$s</string>
+    <string name="drop_point_format">Drop Point: %1$s</string>
+    <string name="amount_received">%1$s received</string>
+    <string name="amount_after_delivery">%1$s after delivery</string>
+    <string name="released">Released</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+
+    <!-- Farmer Profile -->
+    <string name="based_on_quality_delivery_reliability">Based on product quality and delivery reliability</string>
+    <string name="farmer_id">Farmer ID</string>
+    <string name="products_listed">Products Listed</string>
+    <string name="wheat_rice_tomato">Wheat, Rice, Tomato</string>
+    <string name="products_count">%1$d Products</string>
+    <string name="approved_count">%1$d Approved</string>
+    <string name="orders_count">%1$d Orders</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="update_name_location_contact">Update name, location and contact</string>
+    <string name="farm_details">Farm Details</string>
+    <string name="land_size_crops_farming_type">Land size, crops and farming type</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="bank_account_payout_details">Bank account and payout details</string>
+    <string name="order_history">Order History</string>
+    <string name="view_all_completed_orders">View all completed orders</string>
+    <string name="help_center">Help Center</string>
+    <string name="get_support_from_krishi_sangam">Get support from Krishi Sangam</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="logout_from_farmer_account">Logout from farmer account</string>
+
+    <!-- Manager / Node Manager -->
+    <string name="verifications">Verifications</string>
+    <string name="review_farmer_listings">Review farmer product listings</string>
+    <string name="manage_orders_dispatch">Manage orders and dispatch</string>
+    <string name="track_payments_payouts">Track payments and farmer payouts</string>
+    <string name="view_farmer_directory">View farmer directory</string>
+    <string name="manager_dashboard">Manager Dashboard</string>
+    <string name="pending_verifications">Pending Verifications</string>
+    <string name="approved_listings">Approved Listings</string>
+    <string name="rejected_listings">Rejected Listings</string>
+    <string name="farmer_details">Farmer Details</string>
+    <string name="product_details">Product Details</string>
+    <string name="approve_product">Approve Product</string>
+    <string name="reject_product">Reject Product</string>
+    <string name="payment_management">Payment Management</string>
+    <string name="farmer_payouts">Farmer Payouts</string>
+    <string name="order_dispatch">Order Dispatch</string>
+
+    <!-- Common Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="done_common">Done</string>
+    <string name="continue_text">Continue</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="update">Update</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading...</string>
+    <string name="failed_to_load">Failed to load</string>
+
+</resources>

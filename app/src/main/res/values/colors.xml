@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- App Brand Colors -->
+    <color name="primary_green">#01AC66</color>
+    <color name="app_background">#E8FAF6</color>
+
+    <!-- Splash Screen Colors -->
+    <color name="splash_screen_bg">#01AC66</color>
+    <color name="splash_icon_bg">#F4F4F4</color>
+</resources>

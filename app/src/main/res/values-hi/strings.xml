@@ -1,0 +1,370 @@
+<resources>
+
+    <!-- App Basic -->
+    <string name="app_name">कृषि संगम</string>
+
+    <!-- Common Navigation -->
+    <string name="home">होम</string>
+    <string name="farmers">किसान</string>
+    <string name="marketplace">बाज़ार</string>
+    <string name="orders">ऑर्डर</string>
+    <string name="profile">प्रोफ़ाइल</string>
+    <string name="search">खोजें</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="earnings">कमाई</string>
+    <string name="payments">भुगतान</string>
+
+    <!-- Language -->
+    <string name="app_language">ऐप भाषा</string>
+    <string name="choose_app_language">ऐप भाषा चुनें</string>
+    <string name="select_preferred_language">अपनी पसंदीदा भाषा चुनें</string>
+    <string name="select">चुनें</string>
+    <string name="language_selected">चुना गया</string>
+    <string name="change_app_language">ऐप भाषा बदलें</string>
+
+    <!-- Roles -->
+    <string name="buyer">खरीदार</string>
+    <string name="farmer">किसान</string>
+    <string name="node_manager">नोड मैनेजर</string>
+    <string name="manager">मैनेजर</string>
+
+    <!-- Common Account/Profile -->
+    <string name="buyer_account">खरीदार अकाउंट</string>
+    <string name="farmer_account">किसान अकाउंट</string>
+    <string name="manager_account">मैनेजर अकाउंट</string>
+    <string name="manage_buyer_account">अपना खरीदार अकाउंट मैनेज करें</string>
+    <string name="manage_farmer_account">अपना किसान अकाउंट मैनेज करें</string>
+    <string name="manage_manager_account">अपना नोड मैनेजर अकाउंट मैनेज करें</string>
+    <string name="account_options">अकाउंट विकल्प</string>
+    <string name="wishlist">पसंदीदा</string>
+    <string name="view_saved_products">सेव किए गए उत्पाद देखें</string>
+    <string name="my_orders">मेरे ऑर्डर</string>
+    <string name="track_product_orders">अपने उत्पाद ऑर्डर ट्रैक करें</string>
+    <string name="delivery_location">डिलीवरी स्थान</string>
+    <string name="manage_delivery_address">डिलीवरी पता मैनेज करें</string>
+    <string name="notifications">सूचनाएं</string>
+    <string name="manage_alerts">अलर्ट और अपडेट मैनेज करें</string>
+    <string name="help_support">मदद और सहायता</string>
+    <string name="contact_support">कृषि संगम सपोर्ट से संपर्क करें</string>
+    <string name="logout">लॉगआउट</string>
+    <string name="sign_out_account">अपने अकाउंट से साइन आउट करें</string>
+    <string name="no_email_found">ईमेल नहीं मिला</string>
+
+    <!-- Buyer Home -->
+    <string name="welcome_back">वापसी पर स्वागत है</string>
+    <string name="buyer_home">खरीदार होम</string>
+    <string name="search_products">उत्पाद खोजें...</string>
+    <string name="search_wheat_rice_vegetables">गेहूं, चावल, सब्जियां खोजें...</string>
+    <string name="categories">श्रेणियां</string>
+    <string name="see_all">सब देखें</string>
+    <string name="todays_offers">आज के ऑफर</string>
+    <string name="bulk_crop_deal">बल्क फसल डील</string>
+    <string name="up_to_discount">12% तक छूट</string>
+    <string name="up_to_lower_logistics_cost">लॉजिस्टिक्स लागत में 12% तक कमी</string>
+    <string name="for_community_orders">कम्युनिटी ऑर्डर के लिए</string>
+    <string name="tap_category_to_view_listings">ऊपर दी गई श्रेणी पर टैप करके उपलब्ध किसान लिस्टिंग देखें।</string>
+
+    <!-- Categories / Crops -->
+    <string name="grain">अनाज</string>
+    <string name="grains">अनाज</string>
+    <string name="fruits">फल</string>
+    <string name="fruit">फल</string>
+    <string name="vegetables">सब्जियां</string>
+    <string name="vegetable">सब्जी</string>
+    <string name="pulses">दालें</string>
+    <string name="pulse">दाल</string>
+    <string name="rice">चावल</string>
+    <string name="wheat">गेहूं</string>
+    <string name="tomato">टमाटर</string>
+    <string name="capsicum">शिमला मिर्च</string>
+    <string name="sharbati_wheat">शरबती गेहूं</string>
+    <string name="fresh_vegetables">ताज़ी सब्जियां</string>
+    <string name="grade_a_wheat">ग्रेड A गेहूं</string>
+    <string name="basmati_rice">बासमती चावल</string>
+    <string name="bulk_onion">बल्क प्याज</string>
+    <string name="other">अन्य</string>
+
+    <!-- Buyer Category Listing -->
+    <string name="failed_to_load_products">उत्पाद लोड करने में विफल</string>
+    <string name="approved_category_listings">स्वीकृत %1$s लिस्टिंग</string>
+    <string name="products_available_count">%1$d उत्पाद उपलब्ध</string>
+    <string name="unnamed_product">बिना नाम का उत्पाद</string>
+    <string name="product">उत्पाद</string>
+    <string name="category">श्रेणी</string>
+    <string name="quantity_not_added">मात्रा नहीं जोड़ी गई</string>
+    <string name="price_not_added">कीमत नहीं जोड़ी गई</string>
+    <string name="trust_score_with_value">विश्वास %1$d/100</string>
+    <string name="verified">सत्यापित</string>
+    <string name="no_category_products_yet">अभी कोई %1$s उत्पाद नहीं</string>
+    <string name="approved_products_after_verification">नोड मैनेजर सत्यापन के बाद स्वीकृत उत्पाद यहां दिखाई देंगे।</string>
+
+    <!-- Buyer Farmers Screen -->
+    <string name="farmer_directory">किसान डायरेक्टरी</string>
+    <string name="verified_farmers_trust_scores">ट्रस्ट स्कोर वाले सत्यापित किसान</string>
+    <string name="trust_score">ट्रस्ट स्कोर</string>
+    <string name="products">उत्पाद</string>
+    <string name="earned">कमाई</string>
+    <string name="verified_farmer">सत्यापित किसान</string>
+    <string name="premium_farmer">प्रीमियम किसान</string>
+    <string name="main_crops">मुख्य फसलें</string>
+    <string name="main_crops_with_value">मुख्य फसलें: %1$s</string>
+    <string name="trust">विश्वास</string>
+    <string name="percentage_value">%1$d%%</string>
+    <string name="wheat_rice">गेहूं, चावल</string>
+    <string name="rice_pulses">चावल, दालें</string>
+    <string name="wheat_vegetables">गेहूं, सब्जियां</string>
+
+    <!-- Buyer Marketplace -->
+    <string name="failed_to_load_marketplace_products">बाज़ार उत्पाद लोड करने में विफल</string>
+    <string name="marketplace_title">बाज़ार</string>
+    <string name="verified_farmer_listings_approved_by_agro_node">एग्रो नोड द्वारा स्वीकृत सत्यापित किसान लिस्टिंग</string>
+    <string name="verified_bulk_deals">सत्यापित बल्क डील</string>
+    <string name="up_to_20_off">20% तक छूट</string>
+    <string name="on_agro_node_approved_listings">एग्रो नोड स्वीकृत लिस्टिंग पर</string>
+    <string name="approved_products">स्वीकृत उत्पाद</string>
+    <string name="items_count">%1$d आइटम</string>
+    <string name="agro_node_approved">एग्रो नोड स्वीकृत</string>
+    <string name="no_approved_products_yet">अभी कोई स्वीकृत उत्पाद नहीं</string>
+    <string name="products_after_agro_node_approval">एग्रो नोड स्वीकृति के बाद उत्पाद यहां दिखाई देंगे।</string>
+    <string name="no_location">स्थान नहीं</string>
+    <string name="add_to_order">ऑर्डर में जोड़ें</string>
+    <string name="off">छूट</string>
+    <string name="category_quantity_format">%1$s • %2$s</string>
+    <string name="farmer_name_with_icon">👨‍🌾 %1$s</string>
+    <string name="location_with_icon">📍 %1$s</string>
+
+    <!-- Buyer Orders -->
+    <string name="products_added_from_approved_farmer_listings">स्वीकृत किसान लिस्टिंग से जोड़े गए उत्पाद</string>
+    <string name="no_orders_added_yet">अभी कोई ऑर्डर नहीं जोड़ा गया</string>
+    <string name="add_approved_products_from_marketplace">बाज़ार से स्वीकृत उत्पाद जोड़ें।</string>
+    <string name="my_cart">मेरा कार्ट</string>
+    <string name="cart_empty">आपका कार्ट खाली है</string>
+    <string name="order_summary">ऑर्डर सारांश</string>
+    <string name="bill_split">बिल विभाजन</string>
+    <string name="subtotal">सबटोटल</string>
+    <string name="product_subtotal">उत्पाद सबटोटल</string>
+    <string name="packaging_charge">पैकेजिंग शुल्क</string>
+    <string name="logistics_charge">लॉजिस्टिक्स शुल्क</string>
+    <string name="platform_fee">प्लेटफॉर्म शुल्क</string>
+    <string name="tax">टैक्स</string>
+    <string name="tax_5">टैक्स (5%)</string>
+    <string name="total">कुल</string>
+    <string name="total_amount">कुल राशि</string>
+    <string name="place_order">ऑर्डर करें</string>
+    <string name="proceed_to_checkout">चेकआउट करें</string>
+    <string name="transparent_charges_message">पारदर्शी शुल्क खरीदारों को उत्पाद, पैकेजिंग और लॉजिस्टिक्स लागत समझने में मदद करते हैं।</string>
+
+    <!-- Buyer Search -->
+    <string name="recent_searches">हाल की खोजें</string>
+    <string name="similar_matches">मिलते-जुलते परिणाम</string>
+    <string name="no_products_found">कोई उत्पाद नहीं मिला</string>
+
+    <!-- Farmer Dashboard / Home -->
+    <string name="farmer_dashboard">किसान डैशबोर्ड</string>
+    <string name="your_farm_performance_overview">आपके खेत के प्रदर्शन का सारांश</string>
+    <string name="active_orders">सक्रिय ऑर्डर</string>
+    <string name="total_earnings">कुल कमाई</string>
+    <string name="pending_payment">लंबित भुगतान</string>
+    <string name="after_delivery">डिलीवरी के बाद</string>
+    <string name="approved_pending_summary">%1$d स्वीकृत • %2$d लंबित</string>
+    <string name="completed_count">%1$d पूर्ण</string>
+    <string name="good_improves_with_deliveries">अच्छा • सफल डिलीवरी से बेहतर होता है</string>
+    <string name="recent_orders">हाल के ऑर्डर</string>
+    <string name="ready_for_dispatch">डिस्पैच के लिए तैयार</string>
+    <string name="payment_pending">भुगतान लंबित</string>
+    <string name="order_product_format">%1$s • %2$s</string>
+    <string name="product_status">उत्पाद स्थिति</string>
+    <string name="pending_verification">सत्यापन लंबित</string>
+
+    <!-- Farmer Products -->
+    <string name="my_products">मेरे उत्पाद</string>
+    <string name="manage_product_listings">अपनी उत्पाद लिस्टिंग मैनेज करें</string>
+    <string name="manage_product_listings_long">अपनी उपज लिस्टिंग मैनेज करें</string>
+    <string name="add_product">उत्पाद जोड़ें</string>
+    <string name="add">जोड़ें</string>
+    <string name="add_with_plus">+ जोड़ें</string>
+    <string name="total_products">कुल उत्पाद</string>
+    <string name="approved">स्वीकृत</string>
+    <string name="pending">लंबित</string>
+    <string name="rejected">अस्वीकृत</string>
+    <string name="approve">स्वीकृत करें</string>
+    <string name="reject">अस्वीकृत करें</string>
+    <string name="all">सभी</string>
+    <string name="all_categories">सभी श्रेणियां</string>
+    <string name="available">उपलब्ध</string>
+    <string name="farmer_trust">किसान विश्वास</string>
+    <string name="farmer_trust_with_score">किसान विश्वास: %1$d/100</string>
+    <string name="available_quantity_format">%1$s उपलब्ध</string>
+    <string name="no_products_yet">अभी कोई उत्पाद नहीं</string>
+    <string name="tap_add_to_list_first_product">अपना पहला उत्पाद जोड़ने के लिए + जोड़ें पर टैप करें</string>
+
+    <!-- Farmer Add Product -->
+    <string name="list_new_product">नया उत्पाद सूचीबद्ध करें</string>
+    <string name="list_your_produce_reach_buyers">अपनी उपज सूचीबद्ध करें और अधिक खरीदारों तक पहुंचें</string>
+    <string name="product_info">उत्पाद जानकारी</string>
+    <string name="pricing">मूल्य निर्धारण</string>
+    <string name="photos">फोटो</string>
+    <string name="what_are_you_listing">आप क्या सूचीबद्ध कर रहे हैं?</string>
+    <string name="product_name">उत्पाद का नाम</string>
+    <string name="quantity">मात्रा</string>
+    <string name="unit">इकाई</string>
+    <string name="crop_year">फसल वर्ष</string>
+    <string name="product_description">उत्पाद विवरण</string>
+    <string name="location">स्थान</string>
+    <string name="product_images">उत्पाद चित्र</string>
+    <string name="pricing_details">मूल्य विवरण</string>
+    <string name="add_selling_price_charges">पारदर्शी बिलिंग के लिए बिक्री मूल्य और शुल्क जोड़ें।</string>
+    <string name="product_price">उत्पाद मूल्य</string>
+    <string name="mandi_price">मंडी मूल्य</string>
+    <string name="farmer_expected_price">किसान अपेक्षित मूल्य</string>
+    <string name="krishi_sangam_price">कृषि संगम मूल्य</string>
+    <string name="krishi_sangam">कृषि संगम</string>
+    <string name="profit_gain">लाभ वृद्धि</string>
+    <string name="fairness_score">न्याय स्कोर</string>
+    <string name="buyer_will_see_bill_split">खरीदार उत्पाद मूल्य, पैकेजिंग और लॉजिस्टिक्स सहित पारदर्शी बिल देखेगा।</string>
+    <string name="product_photos">उत्पाद फोटो</string>
+    <string name="photo_placeholders_message">डेमो के लिए फोटो प्लेसहोल्डर दिखाए जा रहे हैं।</string>
+    <string name="connect_camera_gallery_later">बाद में कैमरा/गैलरी अपलोड जोड़ें।</string>
+    <string name="main_photo">मुख्य फोटो</string>
+    <string name="add_photo">फोटो जोड़ें</string>
+    <string name="more">और</string>
+    <string name="preview">प्रीव्यू</string>
+    <string name="status_pending_verification">स्थिति: सत्यापन लंबित</string>
+    <string name="successfully_listed">सफलतापूर्वक सूचीबद्ध हुआ</string>
+    <string name="product_sent_to_agro_node_manager">आपका उत्पाद सत्यापन के लिए एग्रो नोड मैनेजर को भेज दिया गया है।</string>
+    <string name="submit">जमा करें</string>
+    <string name="submitting">जमा हो रहा है...</string>
+    <string name="next">आगे</string>
+    <string name="back">वापस</string>
+    <string name="go_to_my_products">मेरे उत्पादों पर जाएं</string>
+
+    <!-- Farmer Add Product Placeholders / Validation -->
+    <string name="product_name_placeholder">उच्च गुणवत्ता गेहूं</string>
+    <string name="quantity_placeholder">100</string>
+    <string name="unit_placeholder">किलो / क्विंटल</string>
+    <string name="crop_year_placeholder">2024-25</string>
+    <string name="product_description_placeholder">उच्च गुणवत्ता वाली फसल, साफ और छांटी हुई...</string>
+    <string name="location_placeholder">भोपाल, मध्य प्रदेश</string>
+    <string name="please_enter_product_name">कृपया उत्पाद का नाम दर्ज करें</string>
+    <string name="please_enter_quantity">कृपया मात्रा दर्ज करें</string>
+    <string name="please_enter_valid_farmer_expected_price">कृपया सही किसान अपेक्षित मूल्य दर्ज करें</string>
+    <string name="user_not_logged_in">यूज़र लॉगिन नहीं है</string>
+    <string name="failed_to_list_product">उत्पाद सूचीबद्ध करने में विफल</string>
+
+    <!-- Farmer Pricing Intelligence -->
+    <string name="pricing_intelligence">मूल्य विश्लेषण</string>
+    <string name="set_fair_price_using_mandi_rate">मंडी दर और कृषि संगम सुझाए गए मूल्य का उपयोग करके उचित मूल्य तय करें।</string>
+    <string name="current_wholesale_rate">वर्तमान थोक दर</string>
+    <string name="suggested_fair_price">सुझाया गया उचित मूल्य</string>
+    <string name="allowed_range">अनुमत सीमा</string>
+    <string name="price_display_only_message">मंडी मूल्य और कृषि संगम मूल्य केवल देखने के लिए हैं। किसान केवल अपेक्षित मूल्य बदल सकता है।</string>
+    <string name="price_analysis">मूल्य विश्लेषण</string>
+    <string name="difference_from_mandi">मंडी से अंतर</string>
+    <string name="difference_from_suggested">सुझाए गए मूल्य से अंतर</string>
+    <string name="farmer_profit_gain">किसान लाभ वृद्धि</string>
+    <string name="score_out_of_100">%1$d/100</string>
+    <string name="out_of_100">/100</string>
+    <string name="underpriced_by_farmer">किसान ने कम मूल्य रखा है</string>
+    <string name="overpriced_demand_risk">अधिक मूल्य मांग का जोखिम</string>
+    <string name="above_suggested_but_acceptable">सुझाए गए मूल्य से ऊपर लेकिन स्वीकार्य</string>
+    <string name="fair_price">उचित मूल्य</string>
+    <string name="price_with_value">मूल्य: ₹%1$d/%2$s</string>
+    <string name="rupee_per_unit">₹%1$d/%2$s</string>
+    <string name="rupee_range_per_unit">₹%1$d - ₹%2$d/%3$s</string>
+    <string name="overpriced_demand_risk_limit">अधिक मूल्य मांग का जोखिम। मूल्य ₹%1$d/%2$s से कम होना चाहिए</string>
+    <string name="too_low_price_limit">मूल्य बहुत कम है। ₹%1$d/%2$s से अधिक मूल्य दर्ज करें</string>
+    <string name="price_must_be_between">मूल्य ₹%1$d और ₹%2$d/%3$s के बीच होना चाहिए</string>
+
+    <!-- Farmer Earnings -->
+    <string name="your_income_payment_history">आपकी आय और भुगतान इतिहास</string>
+    <string name="view_earnings_payments">कमाई और भुगतान देखें</string>
+    <string name="total_earned">कुल कमाई</string>
+    <string name="pending_release">रिलीज़ लंबित</string>
+    <string name="completed_orders">पूर्ण ऑर्डर</string>
+    <string name="payment_history">भुगतान इतिहास</string>
+    <string name="track_received_pending_payments">प्राप्त और लंबित भुगतान ट्रैक करें</string>
+    <string name="no_completed_payments_yet">अभी कोई पूर्ण भुगतान नहीं</string>
+    <string name="good">अच्छा</string>
+    <string name="improving">सुधार हो रहा है</string>
+    <string name="trust_score_description">आपका ट्रस्ट स्कोर डिलीवरी विश्वसनीयता और उत्पाद गुणवत्ता दर्शाता है। यह हर पूर्ण ऑर्डर के साथ बढ़ता है।</string>
+    <string name="order_buyer_format">%1$s • खरीदार: %2$s</string>
+    <string name="first_half">पहला आधा</string>
+    <string name="second_half">दूसरा आधा</string>
+    <string name="completed">पूर्ण</string>
+
+    <!-- Farmer Orders -->
+    <string name="orders_for_your_products">आपके उत्पादों के ऑर्डर</string>
+    <string name="no_orders_yet">अभी कोई ऑर्डर नहीं</string>
+    <string name="orders_received_for_your_products">आपके उत्पादों के लिए प्राप्त ऑर्डर</string>
+    <string name="ready">तैयार</string>
+    <string name="transit">ट्रांजिट</string>
+    <string name="done">पूर्ण</string>
+    <string name="in_transit">रास्ते में</string>
+    <string name="delivered">डिलीवर हुआ</string>
+    <string name="amount">राशि</string>
+    <string name="node">नोड</string>
+    <string name="payment_split">भुगतान विभाजन</string>
+    <string name="buyer_name_format">खरीदार: %1$s</string>
+    <string name="date_format">तारीख: %1$s</string>
+    <string name="first_half_format">पहला आधा: %1$s</string>
+    <string name="second_half_format">दूसरा आधा: %1$s</string>
+    <string name="drop_point_format">ड्रॉप पॉइंट: %1$s</string>
+    <string name="amount_received">%1$s प्राप्त</string>
+    <string name="amount_after_delivery">%1$s डिलीवरी के बाद</string>
+    <string name="released">रिलीज़ हो गया</string>
+    <string name="today">आज</string>
+    <string name="yesterday">कल</string>
+
+    <!-- Farmer Profile -->
+    <string name="based_on_quality_delivery_reliability">उत्पाद गुणवत्ता और डिलीवरी विश्वसनीयता पर आधारित</string>
+    <string name="farmer_id">किसान आईडी</string>
+    <string name="products_listed">सूचीबद्ध उत्पाद</string>
+    <string name="wheat_rice_tomato">गेहूं, चावल, टमाटर</string>
+    <string name="products_count">%1$d उत्पाद</string>
+    <string name="approved_count">%1$d स्वीकृत</string>
+    <string name="orders_count">%1$d ऑर्डर</string>
+    <string name="edit_profile">प्रोफ़ाइल संपादित करें</string>
+    <string name="update_name_location_contact">नाम, स्थान और संपर्क अपडेट करें</string>
+    <string name="farm_details">खेत विवरण</string>
+    <string name="land_size_crops_farming_type">भूमि आकार, फसलें और खेती का प्रकार</string>
+    <string name="payment_method">भुगतान विधि</string>
+    <string name="bank_account_payout_details">बैंक अकाउंट और पेआउट विवरण</string>
+    <string name="order_history">ऑर्डर इतिहास</string>
+    <string name="view_all_completed_orders">सभी पूर्ण ऑर्डर देखें</string>
+    <string name="help_center">मदद केंद्र</string>
+    <string name="get_support_from_krishi_sangam">कृषि संगम से सहायता प्राप्त करें</string>
+    <string name="sign_out">साइन आउट</string>
+    <string name="logout_from_farmer_account">किसान अकाउंट से लॉगआउट करें</string>
+
+    <!-- Manager / Node Manager -->
+    <string name="verifications">सत्यापन</string>
+    <string name="review_farmer_listings">किसान उत्पाद लिस्टिंग की समीक्षा करें</string>
+    <string name="manage_orders_dispatch">ऑर्डर और डिस्पैच मैनेज करें</string>
+    <string name="track_payments_payouts">भुगतान और किसान पेआउट ट्रैक करें</string>
+    <string name="view_farmer_directory">किसान डायरेक्टरी देखें</string>
+    <string name="manager_dashboard">मैनेजर डैशबोर्ड</string>
+    <string name="pending_verifications">लंबित सत्यापन</string>
+    <string name="approved_listings">स्वीकृत लिस्टिंग</string>
+    <string name="rejected_listings">अस्वीकृत लिस्टिंग</string>
+    <string name="farmer_details">किसान विवरण</string>
+    <string name="product_details">उत्पाद विवरण</string>
+    <string name="approve_product">उत्पाद स्वीकृत करें</string>
+    <string name="reject_product">उत्पाद अस्वीकृत करें</string>
+    <string name="payment_management">भुगतान प्रबंधन</string>
+    <string name="farmer_payouts">किसान भुगतान</string>
+    <string name="order_dispatch">ऑर्डर डिस्पैच</string>
+
+    <!-- Common Actions -->
+    <string name="save">सेव करें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="done_common">हो गया</string>
+    <string name="continue_text">जारी रखें</string>
+    <string name="confirm">पुष्टि करें</string>
+    <string name="delete">हटाएं</string>
+    <string name="edit">संपादित करें</string>
+    <string name="update">अपडेट करें</string>
+    <string name="retry">फिर कोशिश करें</string>
+    <string name="loading">लोड हो रहा है...</string>
+    <string name="failed_to_load">लोड करने में विफल</string>
+
+</resources>
