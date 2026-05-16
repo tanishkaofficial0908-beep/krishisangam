@@ -1,3 +1,12 @@
+<div align="center">
+
+![Android](https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+
+</div>
+
 # Krishi Sangam 🌾
 
 Krishi Sangam is an Agro Node based multilingual Android application designed to help farmers sell their produce more transparently, reduce dependency on middlemen, receive faster payments, and connect with verified bulk/community buyers.
