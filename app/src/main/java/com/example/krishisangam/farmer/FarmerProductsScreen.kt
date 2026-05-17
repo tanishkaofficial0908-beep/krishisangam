@@ -1,10 +1,13 @@
 package com.example.krishisangam.farmer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +20,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -32,6 +37,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,16 +51,24 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
-private val FarmerProductsPrimaryGreen = Color(0xFF01AC66)
-private val FarmerProductsBackground = Color(0xFFE8FAF6)
-private val FarmerProductsTextDark = Color(0xFF111111)
-private val FarmerProductsCardColor = Color.White
-private val FarmerProductsLightGreen = Color(0xFFDFF8EF)
-private val FarmerProductsFieldColor = Color(0xFFF4F4F4)
-private val FarmerProductsSoftRed = Color(0xFFFFE3E3)
-private val FarmerProductsRedText = Color(0xFFD64B4B)
-private val FarmerProductsSoftBlue = Color(0xFFE7F0FF)
-private val FarmerProductsBlueText = Color(0xFF3B6FD8)
+private val PrimaryGreen = Color(0xFF01AC66)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextLight = Color(0xFFF5FFF9)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassDark = Color.White.copy(alpha = 0.095f)
+private val GlassCard = Color.White.copy(alpha = 0.105f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
+private val DialogGreen = Color(0xFF123D2B)
+private val DialogText = Color(0xFFD8EDE3)
+private val SoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
+private val SoftGreen = Color(0xFF01AC66).copy(alpha = 0.16f)
+private val SoftRed = Color(0xFFFF6B6B).copy(alpha = 0.16f)
+private val RedText = Color(0xFFFF6B6B)
+private val SoftBlue = Color(0xFF2F6FED).copy(alpha = 0.18f)
+private val BlueText = Color(0xFF7FB2FF)
 
 private const val CATEGORY_ALL = "All"
 private const val CATEGORY_GRAINS = "Grains"
@@ -90,6 +106,10 @@ fun FarmerProductsScreen(
         mutableStateOf("")
     }
 
+    var selectedProduct by remember {
+        mutableStateOf<ProductModel?>(null)
+    }
+
     DisposableEffect(currentUser?.uid) {
         var listener: ListenerRegistration? = null
 
@@ -116,8 +136,18 @@ fun FarmerProductsScreen(
     }
 
     val filteredProducts = products.filter { product ->
-        val matchesSearch = product.name.contains(searchText, ignoreCase = true) ||
-                product.category.contains(searchText, ignoreCase = true)
+        val query = searchText.trim().lowercase()
+
+        val matchesSearch = if (query.isBlank()) {
+            true
+        } else {
+            product.name.lowercase().contains(query) ||
+                    product.category.lowercase().contains(query) ||
+                    product.price.lowercase().contains(query) ||
+                    product.quantity.lowercase().contains(query) ||
+                    product.status.lowercase().contains(query) ||
+                    product.location.lowercase().contains(query)
+        }
 
         val matchesCategory = selectedCategory == CATEGORY_ALL ||
                 product.category.equals(selectedCategory, ignoreCase = true)
@@ -130,72 +160,141 @@ fun FarmerProductsScreen(
     val pendingProducts = products.count { it.status.equals("pending", ignoreCase = true) }
     val rejectedProducts = products.count { it.status.equals("rejected", ignoreCase = true) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FarmerProductsBackground)
-            .padding(horizontal = 18.dp, vertical = 20.dp)
-    ) {
-        FarmerProductsHeader(
-            onAddProductClick = onAddProductClick
-        )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        FarmerProductsSearchAndFilter(
-            searchText = searchText,
-            onSearchChange = { searchText = it },
-            selectedCategory = selectedCategory,
-            categoryMenuExpanded = categoryMenuExpanded,
-            onCategoryMenuChange = { categoryMenuExpanded = it },
-            onCategorySelected = { category ->
-                selectedCategory = category
-                categoryMenuExpanded = false
+    if (selectedProduct != null) {
+        FarmerProductDetailDialog(
+            product = selectedProduct!!,
+            onDismiss = {
+                selectedProduct = null
             }
         )
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        FarmerProductsSummaryRow(
-            total = totalProducts,
-            approved = approvedProducts,
-            pending = pendingProducts,
-            rejected = rejectedProducts
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        DarkGreen,
+                        BackgroundColor,
+                        DeepGreen
+                    )
+                )
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .align(Alignment.TopEnd)
+                .background(AccentYellow.copy(alpha = 0.07f), CircleShape)
         )
 
-        if (errorMessage.isNotBlank()) {
-            Spacer(modifier = Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .align(Alignment.BottomStart)
+                .background(PrimaryGreen.copy(alpha = 0.10f), CircleShape)
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 20.dp)
+        ) {
+            FarmerProductsHeader(
+                onAddProductClick = onAddProductClick
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            FarmerProductsSearchAndFilter(
+                searchText = searchText,
+                onSearchChange = { searchText = it },
+                onClearSearchClick = {
+                    searchText = ""
+                },
+                selectedCategory = selectedCategory,
+                categoryMenuExpanded = categoryMenuExpanded,
+                onCategoryMenuChange = { categoryMenuExpanded = it },
+                onCategorySelected = { category ->
+                    selectedCategory = category
+                    categoryMenuExpanded = false
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FarmerProductsSummaryRow(
+                total = totalProducts,
+                approved = approvedProducts,
+                pending = pendingProducts,
+                rejected = rejectedProducts
+            )
+
+            if (errorMessage.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = errorMessage,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = RedText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SoftRed, RoundedCornerShape(14.dp))
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = RedText.copy(alpha = 0.25f)
+                            ),
+                            shape = RoundedCornerShape(14.dp)
+                        )
+                        .padding(12.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = errorMessage,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = FarmerProductsRedText
+                text = if (searchText.isBlank() && selectedCategory == CATEGORY_ALL) {
+                    "${filteredProducts.size} products"
+                } else {
+                    "${filteredProducts.size} matching products"
+                },
+                fontSize = 12.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow
             )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-        if (filteredProducts.isEmpty()) {
-            FarmerProductsEmptyState()
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                items(
-                    items = filteredProducts,
-                    key = { product ->
-                        product.productId.ifBlank {
-                            "${product.name}-${product.category}-${product.price}"
+            if (filteredProducts.isEmpty()) {
+                FarmerProductsEmptyState(
+                    isSearching = searchText.isNotBlank() || selectedCategory != CATEGORY_ALL
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(bottom = 130.dp)
+                ) {
+                    items(
+                        items = filteredProducts,
+                        key = { product ->
+                            product.productId.ifBlank {
+                                "${product.name}-${product.category}-${product.price}"
+                            }
                         }
+                    ) { product ->
+                        FarmerProductCard(
+                            product = product,
+                            onClick = {
+                                selectedProduct = product
+                            }
+                        )
                     }
-                ) { product ->
-                    FarmerProductCard(
-                        product = product
-                    )
                 }
             }
         }
@@ -216,8 +315,8 @@ private fun FarmerProductsHeader(
             Text(
                 text = stringResource(R.string.my_products),
                 fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = FarmerProductsTextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -225,13 +324,34 @@ private fun FarmerProductsHeader(
             Text(
                 text = stringResource(R.string.manage_product_listings),
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 20.sp
             )
         }
 
         Box(
             modifier = Modifier
-                .background(FarmerProductsPrimaryGreen, RoundedCornerShape(16.dp))
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            PrimaryGreen,
+                            Color(0xFF00985B),
+                            Color(0xFF007A49)
+                        )
+                    ),
+                    RoundedCornerShape(16.dp)
+                )
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.18f)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
                 .clickable {
                     onAddProductClick()
                 }
@@ -242,7 +362,7 @@ private fun FarmerProductsHeader(
                 text = stringResource(R.string.add_with_plus),
                 color = Color.White,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold
             )
         }
     }
@@ -252,6 +372,7 @@ private fun FarmerProductsHeader(
 private fun FarmerProductsSearchAndFilter(
     searchText: String,
     onSearchChange: (String) -> Unit,
+    onClearSearchClick: () -> Unit,
     selectedCategory: String,
     categoryMenuExpanded: Boolean,
     onCategoryMenuChange: (Boolean) -> Unit,
@@ -264,41 +385,69 @@ private fun FarmerProductsSearchAndFilter(
         Card(
             modifier = Modifier
                 .weight(1f)
-                .height(52.dp),
-            shape = RoundedCornerShape(14.dp),
+                .height(56.dp),
+            shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = GlassDark
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = BorderGlass
             ),
             elevation = CardDefaults.cardElevation(
-                defaultElevation = 2.dp
+                defaultElevation = 3.dp
             )
         ) {
-            TextField(
-                value = searchText,
-                onValueChange = onSearchChange,
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.search_products),
-                        color = Color.Gray
-                    )
-                },
-                leadingIcon = {
-                    Text(
-                        text = "🔍",
-                        fontSize = 17.sp
-                    )
-                },
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = FarmerProductsTextDark,
-                    unfocusedTextColor = FarmerProductsTextDark,
-                    cursorColor = FarmerProductsPrimaryGreen
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🔍",
+                    fontSize = 18.sp
                 )
-            )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                TextField(
+                    value = searchText,
+                    onValueChange = onSearchChange,
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.search_products),
+                            color = TextMuted,
+                            fontSize = 14.sp
+                        )
+                    },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = TextLight,
+                        unfocusedTextColor = TextLight,
+                        focusedPlaceholderColor = TextMuted,
+                        unfocusedPlaceholderColor = TextMuted,
+                        cursorColor = AccentYellow
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (searchText.isNotBlank()) {
+                    Text(
+                        text = "×",
+                        color = TextMuted,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.clickable {
+                            onClearSearchClick()
+                        }
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.size(12.dp))
@@ -306,27 +455,31 @@ private fun FarmerProductsSearchAndFilter(
         Box {
             Card(
                 modifier = Modifier
-                    .height(52.dp)
+                    .height(56.dp)
                     .clickable {
                         onCategoryMenuChange(true)
                     },
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = GlassDark
+                ),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = BorderGlass
                 ),
                 elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
+                    defaultElevation = 3.dp
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 15.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 17.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = localizedFarmerProductCategory(selectedCategory),
                         fontSize = 13.sp,
-                        color = FarmerProductsTextDark,
-                        fontWeight = FontWeight.SemiBold
+                        color = TextLight,
+                        fontWeight = FontWeight.ExtraBold
                     )
 
                     Spacer(modifier = Modifier.size(6.dp))
@@ -334,7 +487,7 @@ private fun FarmerProductsSearchAndFilter(
                     Text(
                         text = "⌄",
                         fontSize = 15.sp,
-                        color = Color.Gray
+                        color = AccentYellow
                     )
                 }
             }
@@ -343,7 +496,9 @@ private fun FarmerProductsSearchAndFilter(
                 expanded = categoryMenuExpanded,
                 onDismissRequest = {
                     onCategoryMenuChange(false)
-                }
+                },
+                containerColor = DialogGreen,
+                tonalElevation = 6.dp
             ) {
                 listOf(
                     CATEGORY_ALL,
@@ -355,7 +510,9 @@ private fun FarmerProductsSearchAndFilter(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = localizedFarmerProductCategory(category)
+                                text = localizedFarmerProductCategory(category),
+                                color = TextLight,
+                                fontWeight = FontWeight.SemiBold
                             )
                         },
                         onClick = {
@@ -431,21 +588,30 @@ private fun FarmerProductSummaryCard(
     label: String
 ) {
     Card(
-        modifier = modifier.height(82.dp),
+        modifier = modifier
+            .height(88.dp)
+            .shadow(
+                elevation = 5.dp,
+                shape = RoundedCornerShape(18.dp)
+            ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp),
+                .padding(9.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = icon,
@@ -455,14 +621,14 @@ private fun FarmerProductSummaryCard(
             Text(
                 text = value,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = FarmerProductsPrimaryGreen
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow
             )
 
             Text(
                 text = label,
                 fontSize = 10.sp,
-                color = Color.Gray,
+                color = TextMuted,
                 maxLines = 1
             )
         }
@@ -471,16 +637,29 @@ private fun FarmerProductSummaryCard(
 
 @Composable
 private fun FarmerProductCard(
-    product: ProductModel
+    product: ProductModel,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.height(250.dp),
-        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier
+            .height(260.dp)
+            .shadow(
+                elevation = 7.dp,
+                shape = RoundedCornerShape(22.dp)
+            )
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = FarmerProductsCardColor
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -500,7 +679,7 @@ private fun FarmerProductCard(
 
                 Text(
                     text = product.emoji.ifBlank { "🌾" },
-                    fontSize = 30.sp
+                    fontSize = 28.sp
                 )
             }
 
@@ -525,8 +704,8 @@ private fun FarmerProductCard(
                     stringResource(R.string.product).uppercase()
                 },
                 fontSize = 11.sp,
-                color = FarmerProductsPrimaryGreen,
-                fontWeight = FontWeight.Bold,
+                color = AccentYellow,
+                fontWeight = FontWeight.ExtraBold,
                 maxLines = 1
             )
 
@@ -537,8 +716,8 @@ private fun FarmerProductCard(
                     stringResource(R.string.unnamed_product)
                 },
                 fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = FarmerProductsTextDark,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight,
                 maxLines = 1
             )
 
@@ -550,7 +729,7 @@ private fun FarmerProductCard(
                     product.trustScore
                 ),
                 fontSize = 11.sp,
-                color = Color.Gray,
+                color = TextMuted,
                 maxLines = 1
             )
 
@@ -561,8 +740,8 @@ private fun FarmerProductCard(
                     "₹0"
                 },
                 fontSize = 16.sp,
-                color = FarmerProductsPrimaryGreen,
-                fontWeight = FontWeight.Bold,
+                color = AccentYellow,
+                fontWeight = FontWeight.ExtraBold,
                 maxLines = 1
             )
 
@@ -574,7 +753,7 @@ private fun FarmerProductCard(
                     product.quantity.ifBlank { "0" }
                 ),
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = TextMuted,
                 maxLines = 1
             )
         }
@@ -588,15 +767,15 @@ private fun FarmerProductStatusBadge(
     val normalizedStatus = status.lowercase().trim()
 
     val backgroundColor = when (normalizedStatus) {
-        "approved" -> FarmerProductsLightGreen
-        "rejected" -> FarmerProductsSoftRed
-        else -> FarmerProductsSoftBlue
+        "approved" -> SoftGreen
+        "rejected" -> SoftRed
+        else -> SoftBlue
     }
 
     val textColor = when (normalizedStatus) {
-        "approved" -> FarmerProductsPrimaryGreen
-        "rejected" -> FarmerProductsRedText
-        else -> FarmerProductsBlueText
+        "approved" -> PrimaryGreen
+        "rejected" -> RedText
+        else -> BlueText
     }
 
     val label = when (normalizedStatus) {
@@ -608,24 +787,37 @@ private fun FarmerProductStatusBadge(
     Text(
         text = label,
         fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         color = textColor,
         modifier = Modifier
             .background(backgroundColor, RoundedCornerShape(18.dp))
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = textColor.copy(alpha = 0.24f)
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
             .padding(horizontal = 8.dp, vertical = 4.dp)
     )
 }
 
 @Composable
-private fun FarmerProductsEmptyState() {
+private fun FarmerProductsEmptyState(
+    isSearching: Boolean
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -637,11 +829,18 @@ private fun FarmerProductsEmptyState() {
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .background(FarmerProductsLightGreen, CircleShape),
+                    .background(Color.White.copy(alpha = 0.12f), CircleShape)
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = BorderGlass
+                        ),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "🌱",
+                    text = if (isSearching) "🔍" else "🌱",
                     fontSize = 34.sp
                 )
             }
@@ -649,19 +848,125 @@ private fun FarmerProductsEmptyState() {
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = stringResource(R.string.no_products_yet),
+                text = if (isSearching) {
+                    "No matching products found"
+                } else {
+                    stringResource(R.string.no_products_yet)
+                },
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = FarmerProductsTextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(5.dp))
 
             Text(
-                text = stringResource(R.string.tap_add_to_list_first_product),
+                text = if (isSearching) {
+                    "Try searching by crop name, category, status, price, or quantity."
+                } else {
+                    stringResource(R.string.tap_add_to_list_first_product)
+                },
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 18.sp
             )
         }
     }
+}
+
+@Composable
+private fun FarmerProductDetailDialog(
+    product: ProductModel,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {
+            onDismiss()
+        },
+        containerColor = DialogGreen,
+        titleContentColor = TextLight,
+        textContentColor = DialogText,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text(
+                    text = "OK",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        title = {
+            Text(
+                text = product.name.ifBlank {
+                    stringResource(R.string.unnamed_product)
+                },
+                color = TextLight,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 22.sp
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = product.emoji.ifBlank { "🌾" },
+                    fontSize = 38.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Category: ${product.category.ifBlank { stringResource(R.string.product) }}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Quantity: ${product.quantity.ifBlank { "0" }}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Price: ${product.price.ifBlank { "₹0" }}",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Status: ${product.status.ifBlank { "pending" }}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Location: ${product.location.ifBlank { "Not added" }}",
+                    color = DialogText,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Trust score: ${product.trustScore}",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    )
 }

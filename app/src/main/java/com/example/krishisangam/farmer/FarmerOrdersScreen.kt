@@ -1,6 +1,8 @@
 package com.example.krishisangam.farmer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,10 +18,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,13 +44,22 @@ import androidx.compose.ui.unit.sp
 import com.example.krishisangam.R
 
 private val PrimaryGreen = Color(0xFF01AC66)
-private val BackgroundColor = Color(0xFFE8FAF6)
-private val TextDark = Color(0xFF111111)
-private val LightGreen = Color(0xFFDFF8EF)
-private val SoftYellow = Color(0xFFFFF4D6)
-private val YellowText = Color(0xFFB8860B)
-private val SoftBlue = Color(0xFFE6F0FF)
-private val BlueText = Color(0xFF2F6FED)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextLight = Color(0xFFF5FFF9)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassDark = Color.White.copy(alpha = 0.095f)
+private val GlassCard = Color.White.copy(alpha = 0.105f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
+private val DialogGreen = Color(0xFF123D2B)
+private val DialogText = Color(0xFFD8EDE3)
+private val SoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
+private val SoftGreen = Color(0xFF01AC66).copy(alpha = 0.16f)
+private val SoftBlue = Color(0xFF2F6FED).copy(alpha = 0.18f)
+private val BlueText = Color(0xFF7FB2FF)
+private val DividerGlass = Color.White.copy(alpha = 0.14f)
 
 private const val ORDER_FILTER_ALL = "all"
 private const val ORDER_STATUS_PENDING = "pending"
@@ -69,6 +86,19 @@ fun FarmerOrdersScreen() {
     var selectedFilter by remember {
         mutableStateOf(ORDER_FILTER_ALL)
     }
+
+    var searchText by remember {
+        mutableStateOf("")
+    }
+
+    var selectedOrder by remember {
+        mutableStateOf<FarmerOrder?>(null)
+    }
+
+    val pendingText = stringResource(R.string.pending)
+    val readyText = stringResource(R.string.ready)
+    val transitText = stringResource(R.string.in_transit)
+    val deliveredText = stringResource(R.string.delivered)
 
     val orders = listOf(
         FarmerOrder(
@@ -125,7 +155,7 @@ fun FarmerOrdersScreen() {
         )
     )
 
-    val visibleOrders = if (selectedFilter == ORDER_FILTER_ALL) {
+    val filterMatchedOrders = if (selectedFilter == ORDER_FILTER_ALL) {
         orders
     } else {
         orders.filter { order ->
@@ -133,59 +163,230 @@ fun FarmerOrdersScreen() {
         }
     }
 
-    Column(
+    val visibleOrders = filterMatchedOrders.filter { order ->
+        val query = searchText.trim().lowercase()
+
+        if (query.isBlank()) {
+            true
+        } else {
+            val statusText = when (order.statusKey) {
+                ORDER_STATUS_PENDING -> pendingText
+                ORDER_STATUS_READY -> readyText
+                ORDER_STATUS_TRANSIT -> transitText
+                ORDER_STATUS_DELIVERED -> deliveredText
+                else -> ""
+            }
+
+            order.id.lowercase().contains(query) ||
+                    order.buyerName.lowercase().contains(query) ||
+                    order.productName.lowercase().contains(query) ||
+                    order.quantity.lowercase().contains(query) ||
+                    order.amount.lowercase().contains(query) ||
+                    order.deliveryLocation.lowercase().contains(query) ||
+                    order.orderDate.lowercase().contains(query) ||
+                    statusText.lowercase().contains(query)
+        }
+    }
+
+    if (selectedOrder != null) {
+        FarmerOrderDetailDialog(
+            order = selectedOrder!!,
+            onDismiss = {
+                selectedOrder = null
+            }
+        )
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
-            .padding(horizontal = 18.dp, vertical = 20.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        DarkGreen,
+                        BackgroundColor,
+                        DeepGreen
+                    )
+                )
+            )
     ) {
-        Text(
-            text = stringResource(R.string.my_orders),
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .align(Alignment.TopEnd)
+                .background(AccentYellow.copy(alpha = 0.07f), CircleShape)
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = stringResource(R.string.orders_received_for_your_products),
-            fontSize = 14.sp,
-            color = Color.Gray
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .align(Alignment.BottomStart)
+                .background(PrimaryGreen.copy(alpha = 0.10f), CircleShape)
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 20.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.my_orders),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
+            )
 
-        FarmerOrderSummaryRow(
-            totalOrders = orders.size,
-            readyOrders = orders.count { it.statusKey == ORDER_STATUS_READY },
-            transitOrders = orders.count { it.statusKey == ORDER_STATUS_TRANSIT },
-            deliveredOrders = orders.count { it.statusKey == ORDER_STATUS_DELIVERED }
-        )
+            Spacer(modifier = Modifier.height(5.dp))
 
-        Spacer(modifier = Modifier.height(18.dp))
+            Text(
+                text = stringResource(R.string.orders_received_for_your_products),
+                fontSize = 14.sp,
+                color = TextMuted,
+                lineHeight = 20.sp
+            )
 
-        FarmerOrderFilterRow(
-            selectedFilter = selectedFilter,
-            onFilterSelected = { selectedFilter = it }
-        )
+            Spacer(modifier = Modifier.height(18.dp))
 
-        Spacer(modifier = Modifier.height(18.dp))
-
-        if (visibleOrders.isEmpty()) {
-            EmptyFarmerOrderState()
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(visibleOrders) { order ->
-                    FarmerOrderCard(order = order)
+            FarmerOrderSearchBar(
+                searchText = searchText,
+                onSearchTextChange = { newValue ->
+                    searchText = newValue
+                },
+                onClearClick = {
+                    searchText = ""
                 }
+            )
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
+
+            FarmerOrderSummaryRow(
+                totalOrders = orders.size,
+                readyOrders = orders.count { it.statusKey == ORDER_STATUS_READY },
+                transitOrders = orders.count { it.statusKey == ORDER_STATUS_TRANSIT },
+                deliveredOrders = orders.count { it.statusKey == ORDER_STATUS_DELIVERED }
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            FarmerOrderFilterRow(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { selectedFilter = it }
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = if (searchText.isBlank()) {
+                    "${visibleOrders.size} orders"
+                } else {
+                    "${visibleOrders.size} matching orders"
+                },
+                fontSize = 12.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            if (visibleOrders.isEmpty()) {
+                EmptyFarmerOrderState(
+                    isSearching = searchText.isNotBlank()
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(visibleOrders) { order ->
+                        FarmerOrderCard(
+                            order = order,
+                            onClick = {
+                                selectedOrder = order
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(130.dp))
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun FarmerOrderSearchBar(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onClearClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = GlassDark
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "🔍",
+                fontSize = 19.sp
+            )
+
+            Spacer(modifier = Modifier.size(8.dp))
+
+            TextField(
+                value = searchText,
+                onValueChange = { newValue ->
+                    onSearchTextChange(newValue)
+                },
+                placeholder = {
+                    Text(
+                        text = "Search order, buyer, crop, location",
+                        color = TextMuted,
+                        fontSize = 14.sp
+                    )
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = AccentYellow,
+                    focusedTextColor = TextLight,
+                    unfocusedTextColor = TextLight,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted
+                ),
+                modifier = Modifier.weight(1f)
+            )
+
+            if (searchText.isNotBlank()) {
+                Text(
+                    text = "×",
+                    color = TextMuted,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.clickable {
+                        onClearClick()
+                    }
+                )
             }
         }
     }
@@ -240,13 +441,22 @@ fun FarmerOrderSummaryCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(84.dp),
+        modifier = modifier
+            .height(90.dp)
+            .shadow(
+                elevation = 5.dp,
+                shape = RoundedCornerShape(18.dp)
+            ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 3.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(
@@ -258,9 +468,16 @@ fun FarmerOrderSummaryCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(27.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
-                    .background(LightGreen),
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = BorderGlass
+                        ),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -271,16 +488,17 @@ fun FarmerOrderSummaryCard(
 
             Text(
                 text = value,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryGreen
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow
             )
 
             Text(
                 text = title,
                 fontSize = 9.sp,
-                color = Color.Gray,
-                maxLines = 1
+                color = TextMuted,
+                maxLines = 1,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -341,8 +559,19 @@ fun FarmerOrderFilterChip(
                 if (selected) {
                     PrimaryGreen
                 } else {
-                    Color.White
+                    GlassCard
                 }
+            )
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (selected) {
+                        Color.White.copy(alpha = 0.18f)
+                    } else {
+                        BorderGlass
+                    }
+                ),
+                shape = RoundedCornerShape(20.dp)
             )
             .clickable {
                 onFilterSelected(filterKey)
@@ -353,8 +582,8 @@ fun FarmerOrderFilterChip(
         Text(
             text = title,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (selected) Color.White else TextDark,
+            fontWeight = FontWeight.ExtraBold,
+            color = if (selected) Color.White else TextLight,
             maxLines = 1
         )
     }
@@ -362,16 +591,29 @@ fun FarmerOrderFilterChip(
 
 @Composable
 fun FarmerOrderCard(
-    order: FarmerOrder
+    order: FarmerOrder,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 7.dp,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -384,7 +626,14 @@ fun FarmerOrderCard(
                     modifier = Modifier
                         .size(58.dp)
                         .clip(CircleShape)
-                        .background(LightGreen),
+                        .background(Color.White.copy(alpha = 0.12f))
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = BorderGlass
+                            ),
+                            shape = CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -405,8 +654,9 @@ fun FarmerOrderCard(
                             order.productName
                         ),
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextLight,
+                        maxLines = 1
                     )
 
                     Spacer(modifier = Modifier.height(3.dp))
@@ -417,7 +667,8 @@ fun FarmerOrderCard(
                             order.buyerName
                         ),
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = TextMuted,
+                        maxLines = 1
                     )
 
                     Text(
@@ -426,7 +677,8 @@ fun FarmerOrderCard(
                             order.orderDate
                         ),
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = TextMuted,
+                        maxLines = 1
                     )
                 }
 
@@ -438,7 +690,7 @@ fun FarmerOrderCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             HorizontalDivider(
-                color = Color(0xFFEDEDED)
+                color = DividerGlass
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -469,7 +721,11 @@ fun FarmerOrderCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = LightGreen
+                    containerColor = PrimaryGreen.copy(alpha = 0.14f)
+                ),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = PrimaryGreen.copy(alpha = 0.24f)
                 ),
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 0.dp
@@ -481,8 +737,8 @@ fun FarmerOrderCard(
                     Text(
                         text = stringResource(R.string.payment_split),
                         fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextLight
                     )
 
                     Spacer(modifier = Modifier.height(6.dp))
@@ -493,8 +749,8 @@ fun FarmerOrderCard(
                             order.firstPayment
                         ),
                         fontSize = 12.sp,
-                        color = PrimaryGreen,
-                        fontWeight = FontWeight.SemiBold
+                        color = AccentYellow,
+                        fontWeight = FontWeight.ExtraBold
                     )
 
                     Text(
@@ -503,7 +759,7 @@ fun FarmerOrderCard(
                             order.pendingPayment
                         ),
                         fontSize = 12.sp,
-                        color = TextDark
+                        color = DialogText
                     )
                 }
             }
@@ -516,7 +772,8 @@ fun FarmerOrderCard(
                     order.deliveryLocation
                 ),
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 17.sp
             )
         }
     }
@@ -533,15 +790,15 @@ fun FarmerOrderInfoBox(
         Text(
             text = value,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark,
+            fontWeight = FontWeight.ExtraBold,
+            color = TextLight,
             maxLines = 1
         )
 
         Text(
             text = title,
             fontSize = 10.sp,
-            color = Color.Gray
+            color = TextMuted
         )
     }
 }
@@ -551,8 +808,8 @@ fun FarmerOrderStatusBadge(
     statusKey: String
 ) {
     val bgColor = when (statusKey) {
-        ORDER_STATUS_READY -> LightGreen
-        ORDER_STATUS_DELIVERED -> LightGreen
+        ORDER_STATUS_READY -> SoftGreen
+        ORDER_STATUS_DELIVERED -> SoftGreen
         ORDER_STATUS_TRANSIT -> SoftBlue
         else -> SoftYellow
     }
@@ -561,7 +818,7 @@ fun FarmerOrderStatusBadge(
         ORDER_STATUS_READY -> PrimaryGreen
         ORDER_STATUS_DELIVERED -> PrimaryGreen
         ORDER_STATUS_TRANSIT -> BlueText
-        else -> YellowText
+        else -> AccentYellow
     }
 
     val statusText = when (statusKey) {
@@ -574,25 +831,38 @@ fun FarmerOrderStatusBadge(
     Text(
         text = statusText,
         fontSize = 10.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         color = textColor,
         modifier = Modifier
             .background(bgColor, RoundedCornerShape(20.dp))
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = textColor.copy(alpha = 0.24f)
+                ),
+                shape = RoundedCornerShape(20.dp)
+            )
             .padding(horizontal = 9.dp, vertical = 5.dp),
         maxLines = 1
     )
 }
 
 @Composable
-fun EmptyFarmerOrderState() {
+fun EmptyFarmerOrderState(
+    isSearching: Boolean
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -602,26 +872,155 @@ fun EmptyFarmerOrderState() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "📦",
+                text = if (isSearching) "🔍" else "📦",
                 fontSize = 42.sp
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = stringResource(R.string.no_orders_yet),
+                text = if (isSearching) {
+                    "No matching orders found"
+                } else {
+                    stringResource(R.string.no_orders_yet)
+                },
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = stringResource(R.string.orders_for_your_products),
+                text = if (isSearching) {
+                    "Try searching buyer name, crop, order ID, location, or status."
+                } else {
+                    stringResource(R.string.orders_for_your_products)
+                },
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 18.sp
             )
         }
     }
+}
+
+@Composable
+fun FarmerOrderDetailDialog(
+    order: FarmerOrder,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {
+            onDismiss()
+        },
+        containerColor = DialogGreen,
+        titleContentColor = TextLight,
+        textContentColor = DialogText,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text(
+                    text = "OK",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        title = {
+            Text(
+                text = order.id,
+                color = TextLight,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 22.sp
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = order.productEmoji,
+                    fontSize = 38.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = order.productName,
+                    color = TextLight,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Buyer: ${order.buyerName}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Quantity: ${order.quantity}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Amount: ${order.amount}",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Date: ${order.orderDate}",
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Drop point: ${order.deliveryLocation}",
+                    color = DialogText,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Payment split",
+                    color = TextLight,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 15.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = order.firstPayment,
+                    color = AccentYellow,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = order.pendingPayment,
+                    color = DialogText,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    )
 }

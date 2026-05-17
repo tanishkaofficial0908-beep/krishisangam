@@ -1,6 +1,8 @@
 package com.example.krishisangam.farmer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -43,14 +47,19 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private val PrimaryGreen = Color(0xFF01AC66)
-private val BackgroundColor = Color(0xFFE8FAF6)
-private val TextDark = Color(0xFF111111)
-private val FieldColor = Color(0xFFFFFFFF)
-private val LightGreen = Color(0xFFDFF8EF)
-private val SoftRed = Color(0xFFFFE3E3)
-private val RedText = Color(0xFFD64B4B)
-private val SoftYellow = Color(0xFFFFF4D6)
-private val YellowText = Color(0xFFB8860B)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextLight = Color(0xFFF5FFF9)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassDark = Color.White.copy(alpha = 0.095f)
+private val GlassCard = Color.White.copy(alpha = 0.105f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
+private val SoftRed = Color(0xFFFF6B6B).copy(alpha = 0.16f)
+private val RedText = Color(0xFFFF6B6B)
+private val SoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
+private val YellowText = Color(0xFFFFC107)
 
 private const val PRICE_FLAG_UNDERPRICED = "underpriced"
 private const val PRICE_FLAG_OVERPRICED = "overpriced"
@@ -125,140 +134,105 @@ fun FarmerAddProductScreen(
         pricingResult.unit
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
-            .padding(horizontal = 18.dp, vertical = 18.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        AddProductTopBar(
-            onBackClick = onBackClick
-        )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        StepIndicator(
-            currentStep = currentStep
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        when (currentStep) {
-            1 -> {
-                ProductInfoStep(
-                    selectedCategory = selectedCategory,
-                    productName = productName,
-                    quantity = quantity,
-                    unit = unit,
-                    cropYear = cropYear,
-                    description = description,
-                    location = location,
-                    onCategorySelected = { category, emoji ->
-                        selectedCategory = category
-                        selectedEmoji = emoji
-                    },
-                    onProductNameChange = { productName = it },
-                    onQuantityChange = { quantity = it },
-                    onUnitChange = { unit = it },
-                    onCropYearChange = { cropYear = it },
-                    onDescriptionChange = { description = it },
-                    onLocationChange = { location = it }
-                )
-
-                Spacer(modifier = Modifier.height(22.dp))
-
-                PrimaryActionButton(
-                    text = stringResource(R.string.next),
-                    onClick = {
-                        if (productName.isBlank()) {
-                            errorMessage = pleaseEnterProductName
-                        } else if (quantity.isBlank()) {
-                            errorMessage = pleaseEnterQuantity
-                        } else {
-                            errorMessage = ""
-                            currentStep = 2
-                        }
-                    }
-                )
-
-                if (errorMessage.isNotBlank()) {
-                    ErrorBox(errorMessage)
-                }
-            }
-
-            2 -> {
-                PricingStep(
-                    pricingResult = pricingResult,
-                    farmerExpectedPrice = farmerExpectedPrice,
-                    onFarmerExpectedPriceChange = { farmerExpectedPrice = it }
-                )
-
-                if (errorMessage.isNotBlank()) {
-                    ErrorBox(errorMessage)
-                }
-
-                Spacer(modifier = Modifier.height(22.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    SecondaryActionButton(
-                        text = stringResource(R.string.back),
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            errorMessage = ""
-                            currentStep = 1
-                        }
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        DarkGreen,
+                        BackgroundColor,
+                        DeepGreen
                     )
+                )
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .align(Alignment.TopEnd)
+                .background(AccentYellow.copy(alpha = 0.07f), CircleShape)
+        )
+
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .align(Alignment.BottomStart)
+                .background(PrimaryGreen.copy(alpha = 0.10f), CircleShape)
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp, vertical = 18.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            AddProductTopBar(
+                onBackClick = onBackClick
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            StepIndicator(
+                currentStep = currentStep
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            when (currentStep) {
+                1 -> {
+                    ProductInfoStep(
+                        selectedCategory = selectedCategory,
+                        productName = productName,
+                        quantity = quantity,
+                        unit = unit,
+                        cropYear = cropYear,
+                        description = description,
+                        location = location,
+                        onCategorySelected = { category, emoji ->
+                            selectedCategory = category
+                            selectedEmoji = emoji
+                        },
+                        onProductNameChange = { productName = it },
+                        onQuantityChange = { quantity = it },
+                        onUnitChange = { unit = it },
+                        onCropYearChange = { cropYear = it },
+                        onDescriptionChange = { description = it },
+                        onLocationChange = { location = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(22.dp))
 
                     PrimaryActionButton(
                         text = stringResource(R.string.next),
-                        modifier = Modifier.weight(1f),
                         onClick = {
-                            val enteredPrice = cleanPriceToInt(farmerExpectedPrice)
-
-                            if (enteredPrice == null) {
-                                errorMessage = pleaseEnterValidFarmerExpectedPrice
-                            } else if (enteredPrice > pricingResult.maxAllowedPrice) {
-                                errorMessage = overpricedDemandRiskLimitMessage
-                            } else if (enteredPrice < pricingResult.minAllowedPrice) {
-                                errorMessage = tooLowPriceLimitMessage
+                            if (productName.isBlank()) {
+                                errorMessage = pleaseEnterProductName
+                            } else if (quantity.isBlank()) {
+                                errorMessage = pleaseEnterQuantity
                             } else {
                                 errorMessage = ""
-                                currentStep = 3
+                                currentStep = 2
                             }
                         }
                     )
-                }
-            }
 
-            3 -> {
-                PhotosStep(
-                    selectedEmoji = selectedEmoji,
-                    productName = productName,
-                    pricingResult = pricingResult
-                )
-
-                if (errorMessage.isNotBlank()) {
-                    ErrorBox(errorMessage)
+                    if (errorMessage.isNotBlank()) {
+                        ErrorBox(errorMessage)
+                    }
                 }
 
-                if (showSuccessMessage) {
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SuccessListedCard()
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    PrimaryActionButton(
-                        text = stringResource(R.string.go_to_my_products),
-                        onClick = {
-                            onProductSubmitted()
-                        }
+                2 -> {
+                    PricingStep(
+                        pricingResult = pricingResult,
+                        farmerExpectedPrice = farmerExpectedPrice,
+                        onFarmerExpectedPriceChange = { farmerExpectedPrice = it }
                     )
-                } else {
+
+                    if (errorMessage.isNotBlank()) {
+                        ErrorBox(errorMessage)
+                    }
+
                     Spacer(modifier = Modifier.height(22.dp))
 
                     Row(
@@ -269,74 +243,136 @@ fun FarmerAddProductScreen(
                             text = stringResource(R.string.back),
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                currentStep = 2
+                                errorMessage = ""
+                                currentStep = 1
                             }
                         )
 
                         PrimaryActionButton(
-                            text = if (isSubmitting) {
-                                stringResource(R.string.submitting)
-                            } else {
-                                stringResource(R.string.submit)
-                            },
+                            text = stringResource(R.string.next),
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                if (isSubmitting) return@PrimaryActionButton
-
                                 val enteredPrice = cleanPriceToInt(farmerExpectedPrice)
 
                                 if (enteredPrice == null) {
                                     errorMessage = pleaseEnterValidFarmerExpectedPrice
-                                    currentStep = 2
-                                    return@PrimaryActionButton
-                                }
-
-                                if (enteredPrice !in pricingResult.minAllowedPrice..pricingResult.maxAllowedPrice) {
-                                    errorMessage = priceMustBeBetweenMessage
-                                    currentStep = 2
-                                    return@PrimaryActionButton
-                                }
-
-                                isSubmitting = true
-                                errorMessage = ""
-
-                                val finalQuantity = if (quantity.isBlank()) {
-                                    ""
+                                } else if (enteredPrice > pricingResult.maxAllowedPrice) {
+                                    errorMessage = overpricedDemandRiskLimitMessage
+                                } else if (enteredPrice < pricingResult.minAllowedPrice) {
+                                    errorMessage = tooLowPriceLimitMessage
                                 } else {
-                                    "$quantity $unit"
+                                    errorMessage = ""
+                                    currentStep = 3
                                 }
-
-                                saveFarmerProductToFirestore(
-                                    name = productName,
-                                    category = selectedCategory,
-                                    emoji = selectedEmoji,
-                                    quantity = finalQuantity,
-                                    cropYear = cropYear,
-                                    description = description,
-                                    location = location,
-                                    pricingResult = pricingResult,
-                                    userNotLoggedInMessage = userNotLoggedIn,
-                                    productNameRequiredMessage = pleaseEnterProductName,
-                                    quantityRequiredMessage = pleaseEnterQuantity,
-                                    failedToListProductMessage = failedToListProduct,
-                                    defaultFarmerName = defaultFarmerName,
-                                    onSuccess = {
-                                        isSubmitting = false
-                                        showSuccessMessage = true
-                                    },
-                                    onError = { error ->
-                                        isSubmitting = false
-                                        errorMessage = error
-                                    }
-                                )
                             }
                         )
                     }
                 }
-            }
-        }
 
-        Spacer(modifier = Modifier.height(30.dp))
+                3 -> {
+                    PhotosStep(
+                        selectedEmoji = selectedEmoji,
+                        productName = productName,
+                        pricingResult = pricingResult
+                    )
+
+                    if (errorMessage.isNotBlank()) {
+                        ErrorBox(errorMessage)
+                    }
+
+                    if (showSuccessMessage) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        SuccessListedCard()
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        PrimaryActionButton(
+                            text = stringResource(R.string.go_to_my_products),
+                            onClick = {
+                                onProductSubmitted()
+                            }
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(22.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            SecondaryActionButton(
+                                text = stringResource(R.string.back),
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    currentStep = 2
+                                }
+                            )
+
+                            PrimaryActionButton(
+                                text = if (isSubmitting) {
+                                    stringResource(R.string.submitting)
+                                } else {
+                                    stringResource(R.string.submit)
+                                },
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    if (isSubmitting) return@PrimaryActionButton
+
+                                    val enteredPrice = cleanPriceToInt(farmerExpectedPrice)
+
+                                    if (enteredPrice == null) {
+                                        errorMessage = pleaseEnterValidFarmerExpectedPrice
+                                        currentStep = 2
+                                        return@PrimaryActionButton
+                                    }
+
+                                    if (enteredPrice !in pricingResult.minAllowedPrice..pricingResult.maxAllowedPrice) {
+                                        errorMessage = priceMustBeBetweenMessage
+                                        currentStep = 2
+                                        return@PrimaryActionButton
+                                    }
+
+                                    isSubmitting = true
+                                    errorMessage = ""
+
+                                    val finalQuantity = if (quantity.isBlank()) {
+                                        ""
+                                    } else {
+                                        "$quantity $unit"
+                                    }
+
+                                    saveFarmerProductToFirestore(
+                                        name = productName,
+                                        category = selectedCategory,
+                                        emoji = selectedEmoji,
+                                        quantity = finalQuantity,
+                                        cropYear = cropYear,
+                                        description = description,
+                                        location = location,
+                                        pricingResult = pricingResult,
+                                        userNotLoggedInMessage = userNotLoggedIn,
+                                        productNameRequiredMessage = pleaseEnterProductName,
+                                        quantityRequiredMessage = pleaseEnterQuantity,
+                                        failedToListProductMessage = failedToListProduct,
+                                        defaultFarmerName = defaultFarmerName,
+                                        onSuccess = {
+                                            isSubmitting = false
+                                            showSuccessMessage = true
+                                        },
+                                        onError = { error ->
+                                            isSubmitting = false
+                                            errorMessage = error
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
     }
 }
 
@@ -451,8 +487,8 @@ fun PricingStep(
     Text(
         text = stringResource(R.string.pricing_intelligence),
         fontSize = 26.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextDark
+        fontWeight = FontWeight.ExtraBold,
+        color = TextLight
     )
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -460,7 +496,8 @@ fun PricingStep(
     Text(
         text = stringResource(R.string.set_fair_price_using_mandi_rate),
         fontSize = 14.sp,
-        color = Color.Gray
+        color = TextMuted,
+        lineHeight = 20.sp
     )
 
     Spacer(modifier = Modifier.height(20.dp))
@@ -514,10 +551,14 @@ fun PricingStep(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = LightGreen
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -526,8 +567,8 @@ fun PricingStep(
             Text(
                 text = stringResource(R.string.allowed_range),
                 fontSize = 13.sp,
-                color = PrimaryGreen,
-                fontWeight = FontWeight.Bold
+                color = AccentYellow,
+                fontWeight = FontWeight.ExtraBold
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -540,8 +581,8 @@ fun PricingStep(
                     pricingResult.unit
                 ),
                 fontSize = 18.sp,
-                color = PrimaryGreen,
-                fontWeight = FontWeight.Bold
+                color = TextLight,
+                fontWeight = FontWeight.ExtraBold
             )
         }
     }
@@ -557,7 +598,8 @@ fun PricingStep(
     Text(
         text = stringResource(R.string.price_display_only_message),
         fontSize = 12.sp,
-        color = Color.Gray
+        color = TextMuted,
+        lineHeight = 18.sp
     )
 }
 
@@ -569,13 +611,22 @@ fun PriceInfoCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(115.dp),
+        modifier = modifier
+            .height(125.dp)
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(18.dp)
+            ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 2.dp
         )
     ) {
         Column(
@@ -587,7 +638,7 @@ fun PriceInfoCard(
             Text(
                 text = title,
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = TextMuted,
                 fontWeight = FontWeight.SemiBold
             )
 
@@ -596,8 +647,8 @@ fun PriceInfoCard(
             Text(
                 text = value,
                 fontSize = 20.sp,
-                color = PrimaryGreen,
-                fontWeight = FontWeight.Bold
+                color = AccentYellow,
+                fontWeight = FontWeight.ExtraBold
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -605,7 +656,8 @@ fun PriceInfoCard(
             Text(
                 text = subtitle,
                 fontSize = 10.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 14.sp
             )
         }
     }
@@ -626,7 +678,7 @@ fun PriceAnalysisCard(
         PRICE_FLAG_OVERPRICED -> SoftRed
         PRICE_FLAG_UNDERPRICED -> SoftYellow
         PRICE_FLAG_ABOVE_SUGGESTED -> SoftYellow
-        else -> LightGreen
+        else -> PrimaryGreen.copy(alpha = 0.16f)
     }
 
     val flagText = when (pricingResult.priceFlag) {
@@ -637,13 +689,22 @@ fun PriceAnalysisCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 7.dp,
+                shape = RoundedCornerShape(22.dp)
+            ),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -652,8 +713,8 @@ fun PriceAnalysisCard(
             Text(
                 text = stringResource(R.string.price_analysis),
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -695,10 +756,17 @@ fun PriceAnalysisCard(
             Text(
                 text = flagText,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 color = flagColor,
                 modifier = Modifier
                     .background(flagBg, RoundedCornerShape(16.dp))
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = flagColor.copy(alpha = 0.22f)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             )
         }
@@ -724,15 +792,15 @@ fun AnalysisRow(
         Text(
             text = title,
             fontSize = 13.sp,
-            color = Color.Gray,
+            color = TextMuted,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = value,
             fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark
+            fontWeight = FontWeight.ExtraBold,
+            color = TextLight
         )
     }
 }
@@ -744,30 +812,46 @@ fun AddProductTopBar(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "‹",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark,
-            modifier = Modifier.clickable {
-                onBackClick()
-            }
-        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.10f))
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = BorderGlass
+                    ),
+                    shape = CircleShape
+                )
+                .clickable {
+                    onBackClick()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "‹",
+                fontSize = 34.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
+            )
+        }
 
         Column(
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.padding(start = 12.dp)
         ) {
             Text(
                 text = stringResource(R.string.list_new_product),
                 fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Text(
                 text = stringResource(R.string.list_your_produce_reach_buyers),
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 18.sp
             )
         }
     }
@@ -790,9 +874,9 @@ fun StepIndicator(
 
         Text(
             text = "-",
-            color = PrimaryGreen,
+            color = AccentYellow,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
 
         StepItem(
@@ -803,9 +887,9 @@ fun StepIndicator(
 
         Text(
             text = "-",
-            color = PrimaryGreen,
+            color = AccentYellow,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
 
         StepItem(
@@ -829,13 +913,20 @@ fun StepItem(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(if (active) PrimaryGreen else Color.White),
+                .background(if (active) PrimaryGreen else GlassCard)
+                .border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (active) Color.White.copy(alpha = 0.18f) else BorderGlass
+                    ),
+                    shape = CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = number.toString(),
-                color = if (active) Color.White else Color.Gray,
-                fontWeight = FontWeight.Bold,
+                color = if (active) Color.White else TextMuted,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 17.sp
             )
         }
@@ -845,8 +936,8 @@ fun StepItem(
         Text(
             text = title,
             fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = if (active) PrimaryGreen else Color.Gray
+            fontWeight = FontWeight.ExtraBold,
+            color = if (active) AccentYellow else TextMuted
         )
     }
 }
@@ -870,9 +961,9 @@ fun ProductInfoStep(
 ) {
     Text(
         text = stringResource(R.string.what_are_you_listing),
-        fontSize = 17.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextDark
+        fontSize = 18.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = TextLight
     )
 
     Spacer(modifier = Modifier.height(14.dp))
@@ -951,9 +1042,7 @@ fun ProductInfoStep(
 
     Spacer(modifier = Modifier.height(22.dp))
 
-    FieldLabel(
-        text = stringResource(R.string.product_name)
-    )
+    FieldLabel(text = stringResource(R.string.product_name))
 
     AppInputField(
         value = productName,
@@ -968,9 +1057,7 @@ fun ProductInfoStep(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(
-                text = stringResource(R.string.quantity)
-            )
+            FieldLabel(text = stringResource(R.string.quantity))
 
             AppInputField(
                 value = quantity,
@@ -980,9 +1067,7 @@ fun ProductInfoStep(
         }
 
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(
-                text = stringResource(R.string.unit)
-            )
+            FieldLabel(text = stringResource(R.string.unit))
 
             AppInputField(
                 value = unit,
@@ -994,9 +1079,7 @@ fun ProductInfoStep(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    FieldLabel(
-        text = stringResource(R.string.crop_year)
-    )
+    FieldLabel(text = stringResource(R.string.crop_year))
 
     AppInputField(
         value = cropYear,
@@ -1006,9 +1089,7 @@ fun ProductInfoStep(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    FieldLabel(
-        text = stringResource(R.string.product_description)
-    )
+    FieldLabel(text = stringResource(R.string.product_description))
 
     AppInputField(
         value = description,
@@ -1019,9 +1100,7 @@ fun ProductInfoStep(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    FieldLabel(
-        text = stringResource(R.string.location)
-    )
+    FieldLabel(text = stringResource(R.string.location))
 
     AppInputField(
         value = location,
@@ -1039,8 +1118,8 @@ fun PhotosStep(
     Text(
         text = stringResource(R.string.product_photos),
         fontSize = 26.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextDark
+        fontWeight = FontWeight.ExtraBold,
+        color = TextLight
     )
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -1048,7 +1127,8 @@ fun PhotosStep(
     Text(
         text = stringResource(R.string.photo_placeholders_message),
         fontSize = 14.sp,
-        color = Color.Gray
+        color = TextMuted,
+        lineHeight = 20.sp
     )
 
     Spacer(modifier = Modifier.height(22.dp))
@@ -1079,13 +1159,22 @@ fun PhotosStep(
     Spacer(modifier = Modifier.height(26.dp))
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 7.dp,
+                shape = RoundedCornerShape(24.dp)
+            ),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 3.dp
         )
     ) {
         Column(
@@ -1094,8 +1183,8 @@ fun PhotosStep(
             Text(
                 text = stringResource(R.string.preview),
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -1107,7 +1196,14 @@ fun PhotosStep(
                     modifier = Modifier
                         .size(68.dp)
                         .clip(CircleShape)
-                        .background(LightGreen),
+                        .background(Color.White.copy(alpha = 0.12f))
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = BorderGlass
+                            ),
+                            shape = CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -1124,8 +1220,8 @@ fun PhotosStep(
                             stringResource(R.string.product_name)
                         },
                         fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextLight
                     )
 
                     Text(
@@ -1135,14 +1231,14 @@ fun PhotosStep(
                             pricingResult.unit
                         ),
                         fontSize = 14.sp,
-                        color = PrimaryGreen,
-                        fontWeight = FontWeight.Bold
+                        color = AccentYellow,
+                        fontWeight = FontWeight.ExtraBold
                     )
 
                     Text(
                         text = stringResource(R.string.status_pending_verification),
                         fontSize = 13.sp,
-                        color = Color.Gray
+                        color = TextMuted
                     )
                 }
             }
@@ -1154,9 +1250,13 @@ fun PhotosStep(
 fun SuccessListedCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = LightGreen
+            containerColor = PrimaryGreen.copy(alpha = 0.18f)
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = PrimaryGreen.copy(alpha = 0.35f)
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -1178,8 +1278,8 @@ fun SuccessListedCard() {
             Text(
                 text = stringResource(R.string.successfully_listed),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryGreen
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -1187,7 +1287,8 @@ fun SuccessListedCard() {
             Text(
                 text = stringResource(R.string.product_sent_to_agro_node_manager),
                 fontSize = 13.sp,
-                color = Color.Gray
+                color = TextMuted,
+                lineHeight = 18.sp
             )
         }
     }
@@ -1203,13 +1304,17 @@ fun CategoryOption(
 ) {
     Card(
         modifier = modifier
-            .height(86.dp)
+            .height(88.dp)
             .clickable {
                 onClick()
             },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) LightGreen else Color.White
+            containerColor = if (selected) PrimaryGreen.copy(alpha = 0.22f) else GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (selected) AccentYellow.copy(alpha = 0.35f) else BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp
@@ -1232,8 +1337,8 @@ fun CategoryOption(
             Text(
                 text = title,
                 fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (selected) PrimaryGreen else TextDark,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (selected) AccentYellow else TextLight,
                 maxLines = 1
             )
         }
@@ -1250,7 +1355,11 @@ fun PhotoBox(
         modifier = modifier.height(112.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -1265,7 +1374,8 @@ fun PhotoBox(
         ) {
             Text(
                 text = emoji,
-                fontSize = 32.sp
+                fontSize = 32.sp,
+                color = TextLight
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -1273,8 +1383,8 @@ fun PhotoBox(
             Text(
                 text = title,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
             )
         }
     }
@@ -1287,8 +1397,8 @@ fun FieldLabel(
     Text(
         text = text,
         fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextDark,
+        fontWeight = FontWeight.ExtraBold,
+        color = TextLight,
         modifier = Modifier.padding(bottom = 7.dp)
     )
 }
@@ -1306,7 +1416,7 @@ fun AppInputField(
         placeholder = {
             Text(
                 text = placeholder,
-                color = Color(0xFFB0B0B0),
+                color = TextMuted,
                 fontSize = 14.sp
             )
         },
@@ -1314,18 +1424,18 @@ fun AppInputField(
         minLines = minLines,
         shape = RoundedCornerShape(18.dp),
         textStyle = TextStyle(
-            color = TextDark,
+            color = TextLight,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold
         ),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = TextDark,
-            unfocusedTextColor = TextDark,
-            focusedBorderColor = PrimaryGreen,
-            unfocusedBorderColor = Color(0xFFE0E0E0),
-            focusedContainerColor = FieldColor,
-            unfocusedContainerColor = FieldColor,
-            cursorColor = PrimaryGreen
+            focusedTextColor = TextLight,
+            unfocusedTextColor = TextLight,
+            focusedBorderColor = AccentYellow,
+            unfocusedBorderColor = BorderGlass,
+            focusedContainerColor = GlassDark,
+            unfocusedContainerColor = GlassDark,
+            cursorColor = AccentYellow
         )
     )
 }
@@ -1339,8 +1449,27 @@ fun PrimaryActionButton(
     Box(
         modifier = modifier
             .height(54.dp)
+            .shadow(
+                elevation = 9.dp,
+                shape = RoundedCornerShape(17.dp)
+            )
             .clip(RoundedCornerShape(17.dp))
-            .background(PrimaryGreen)
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        PrimaryGreen,
+                        Color(0xFF00985B),
+                        Color(0xFF007A49)
+                    )
+                )
+            )
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color.White.copy(alpha = 0.18f)
+                ),
+                shape = RoundedCornerShape(17.dp)
+            )
             .clickable {
                 onClick()
             },
@@ -1350,7 +1479,7 @@ fun PrimaryActionButton(
             text = text,
             color = Color.White,
             fontSize = 15.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
@@ -1365,7 +1494,14 @@ fun SecondaryActionButton(
         modifier = modifier
             .height(54.dp)
             .clip(RoundedCornerShape(17.dp))
-            .background(Color.White)
+            .background(GlassCard)
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = BorderGlass
+                ),
+                shape = RoundedCornerShape(17.dp)
+            )
             .clickable {
                 onClick()
             },
@@ -1373,9 +1509,9 @@ fun SecondaryActionButton(
     ) {
         Text(
             text = text,
-            color = TextDark,
+            color = TextLight,
             fontSize = 15.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
@@ -1390,10 +1526,17 @@ fun ErrorBox(
         text = message,
         color = RedText,
         fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         modifier = Modifier
             .fillMaxWidth()
             .background(SoftRed, RoundedCornerShape(14.dp))
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = RedText.copy(alpha = 0.22f)
+                ),
+                shape = RoundedCornerShape(14.dp)
+            )
             .padding(12.dp)
     )
 }

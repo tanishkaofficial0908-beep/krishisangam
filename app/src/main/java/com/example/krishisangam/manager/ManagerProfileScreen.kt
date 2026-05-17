@@ -1,6 +1,8 @@
 package com.example.krishisangam.manager
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -38,14 +44,26 @@ import com.example.krishisangam.R
 import com.google.firebase.auth.FirebaseAuth
 
 private val PrimaryGreen = Color(0xFF01AC66)
-private val BackgroundColor = Color(0xFFE8FAF6)
-private val TextDark = Color(0xFF111111)
-private val LightGreen = Color(0xFFDFF8EF)
-private val SoftRed = Color(0xFFFFE3E3)
-private val RedText = Color(0xFFD64B4B)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextLight = Color(0xFFF5FFF9)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassCard = Color.White.copy(alpha = 0.105f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
+private val DialogGreen = Color(0xFF123D2B)
+private val DialogText = Color(0xFFD8EDE3)
+private val SoftRed = Color(0xFFFF6B6B).copy(alpha = 0.16f)
+private val RedText = Color(0xFFFF6B6B)
 
 @Composable
-fun ManagerProfileScreen() {
+fun ManagerProfileScreen(
+    onVerificationClick: () -> Unit,
+    onOrdersClick: () -> Unit,
+    onPaymentsClick: () -> Unit,
+    onFarmersClick: () -> Unit
+) {
     val context = LocalContext.current
     val currentUser = FirebaseAuth.getInstance().currentUser
 
@@ -57,103 +75,209 @@ fun ManagerProfileScreen() {
         mutableStateOf(LanguageManager.getSavedLanguage(context))
     }
 
+    var showLogoutDialog by remember {
+        mutableStateOf(false)
+    }
+
     val managerName = currentUser?.displayName ?: stringResource(R.string.node_manager)
     val managerEmail = currentUser?.email ?: "manager@krishisangam.com"
 
-    Column(
+    val logoutTitle = stringResource(R.string.logout)
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showLogoutDialog = false
+            },
+            containerColor = DialogGreen,
+            titleContentColor = TextLight,
+            textContentColor = DialogText,
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        FirebaseAuth.getInstance().signOut()
+                    }
+                ) {
+                    Text(
+                        text = logoutTitle,
+                        color = RedText,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = AccentYellow,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = logoutTitle,
+                    color = TextLight,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 22.sp
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "🚪",
+                        fontSize = 36.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Are you sure you want to logout from your manager account?",
+                        color = DialogText,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        )
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 22.dp)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        DarkGreen,
+                        BackgroundColor,
+                        DeepGreen
+                    )
+                )
+            )
     ) {
-        Text(
-            text = stringResource(R.string.profile),
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark
+        Box(
+            modifier = Modifier
+                .size(250.dp)
+                .align(Alignment.TopEnd)
+                .background(AccentYellow.copy(alpha = 0.07f), CircleShape)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = stringResource(R.string.manage_manager_account),
-            fontSize = 14.sp,
-            color = Color.Gray
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .align(Alignment.BottomStart)
+                .background(PrimaryGreen.copy(alpha = 0.10f), CircleShape)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 22.dp)
+                .padding(bottom = 110.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.profile),
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
+            )
 
-        ManagerProfileHeaderCard(
-            name = managerName,
-            email = managerEmail
-        )
+            Spacer(modifier = Modifier.height(6.dp))
 
-        Spacer(modifier = Modifier.height(22.dp))
+            Text(
+                text = stringResource(R.string.manage_manager_account),
+                fontSize = 14.sp,
+                color = TextMuted,
+                lineHeight = 20.sp
+            )
 
-        Text(
-            text = stringResource(R.string.account_options),
-            fontSize = 19.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextDark
-        )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(14.dp))
+            ManagerProfileHeaderCard(
+                name = managerName,
+                email = managerEmail
+            )
 
-        ManagerProfileOptionCard(
-            icon = "🌐",
-            title = stringResource(R.string.app_language),
-            subtitle = stringResource(R.string.change_app_language),
-            onClick = {
-                showLanguageSheet = true
-            }
-        )
+            Spacer(modifier = Modifier.height(22.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.account_options),
+                fontSize = 19.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextLight
+            )
 
-        ManagerProfileOptionCard(
-            icon = "✅",
-            title = stringResource(R.string.verifications),
-            subtitle = stringResource(R.string.review_farmer_listings),
-            onClick = {}
-        )
+            Spacer(modifier = Modifier.height(14.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            ManagerProfileOptionCard(
+                icon = "🌐",
+                title = stringResource(R.string.app_language),
+                subtitle = stringResource(R.string.change_app_language),
+                onClick = {
+                    showLanguageSheet = true
+                }
+            )
 
-        ManagerProfileOptionCard(
-            icon = "📦",
-            title = stringResource(R.string.orders),
-            subtitle = stringResource(R.string.manage_orders_dispatch),
-            onClick = {}
-        )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            ManagerProfileOptionCard(
+                icon = "✅",
+                title = stringResource(R.string.verifications),
+                subtitle = stringResource(R.string.review_farmer_listings),
+                onClick = {
+                    onVerificationClick()
+                }
+            )
 
-        ManagerProfileOptionCard(
-            icon = "💳",
-            title = stringResource(R.string.payments),
-            subtitle = stringResource(R.string.track_payments_payouts),
-            onClick = {}
-        )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(12.dp))
+            ManagerProfileOptionCard(
+                icon = "📦",
+                title = stringResource(R.string.orders),
+                subtitle = stringResource(R.string.manage_orders_dispatch),
+                onClick = {
+                    onOrdersClick()
+                }
+            )
 
-        ManagerProfileOptionCard(
-            icon = "🧑‍🌾",
-            title = stringResource(R.string.farmers),
-            subtitle = stringResource(R.string.view_farmer_directory),
-            onClick = {}
-        )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(18.dp))
+            ManagerProfileOptionCard(
+                icon = "💳",
+                title = stringResource(R.string.payments),
+                subtitle = stringResource(R.string.track_payments_payouts),
+                onClick = {
+                    onPaymentsClick()
+                }
+            )
 
-        ManagerLogoutCard(
-            onClick = {
-                FirebaseAuth.getInstance().signOut()
-            }
-        )
+            Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(80.dp))
+            ManagerProfileOptionCard(
+                icon = "🧑‍🌾",
+                title = stringResource(R.string.farmers),
+                subtitle = stringResource(R.string.view_farmer_directory),
+                onClick = {
+                    onFarmersClick()
+                }
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            ManagerLogoutCard(
+                onClick = {
+                    showLogoutDialog = true
+                }
+            )
+
+            Spacer(modifier = Modifier.height(80.dp))
+        }
     }
 
     if (showLanguageSheet) {
@@ -181,10 +305,23 @@ fun ManagerProfileHeaderCard(
     email: String
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(26.dp)
+            ),
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
     ) {
         Row(
             modifier = Modifier
@@ -196,7 +333,14 @@ fun ManagerProfileHeaderCard(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(LightGreen),
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = BorderGlass
+                        ),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -213,8 +357,8 @@ fun ManagerProfileHeaderCard(
                 Text(
                     text = name,
                     fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextDark,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = TextLight,
                     maxLines = 1
                 )
 
@@ -223,7 +367,7 @@ fun ManagerProfileHeaderCard(
                 Text(
                     text = email,
                     fontSize = 13.sp,
-                    color = Color.Gray,
+                    color = TextMuted,
                     maxLines = 1
                 )
 
@@ -232,10 +376,20 @@ fun ManagerProfileHeaderCard(
                 Text(
                     text = stringResource(R.string.manager_account),
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryGreen,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = AccentYellow,
                     modifier = Modifier
-                        .background(LightGreen, RoundedCornerShape(18.dp))
+                        .background(
+                            AccentYellow.copy(alpha = 0.16f),
+                            RoundedCornerShape(18.dp)
+                        )
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = AccentYellow.copy(alpha = 0.24f)
+                            ),
+                            shape = RoundedCornerShape(18.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                 )
             }
@@ -253,12 +407,24 @@ fun ManagerProfileOptionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 5.dp,
+                shape = RoundedCornerShape(20.dp)
+            )
             .clickable {
                 onClick()
             },
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = GlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = BorderGlass
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
         Row(
             modifier = Modifier
@@ -270,7 +436,14 @@ fun ManagerProfileOptionCard(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(LightGreen),
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = BorderGlass
+                        ),
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -287,8 +460,8 @@ fun ManagerProfileOptionCard(
                 Text(
                     text = title,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextDark
+                    fontWeight = FontWeight.ExtraBold,
+                    color = TextLight
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -296,15 +469,16 @@ fun ManagerProfileOptionCard(
                 Text(
                     text = subtitle,
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = TextMuted,
+                    maxLines = 1
                 )
             }
 
             Text(
                 text = "›",
                 fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Gray
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentYellow
             )
         }
     }
@@ -317,12 +491,24 @@ fun ManagerLogoutCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 5.dp,
+                shape = RoundedCornerShape(20.dp)
+            )
             .clickable {
                 onClick()
             },
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = SoftRed),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = SoftRed
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = RedText.copy(alpha = 0.24f)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
         Row(
             modifier = Modifier
@@ -343,7 +529,7 @@ fun ManagerLogoutCard(
                 Text(
                     text = stringResource(R.string.logout),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     color = RedText
                 )
 
