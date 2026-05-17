@@ -37,6 +37,10 @@
     <string name="manage_manager_account">अपना नोड मैनेजर अकाउंट मैनेज करें</string>
     <string name="account_options">अकाउंट विकल्प</string>
     <string name="wishlist">पसंदीदा</string>
+    <string name="saved_products_for_later">बाद में खरीदने के लिए सेव किए गए उत्पाद</string>
+    <string name="saved">सेव किया गया</string>
+    <string name="no_wishlist_products_yet">अभी कोई पसंदीदा उत्पाद नहीं</string>
+    <string name="tap_heart_to_save_products">किसी भी उत्पाद पर दिल आइकन दबाकर उसे यहां सेव करें।</string>
     <string name="view_saved_products">सेव किए गए उत्पाद देखें</string>
     <string name="my_orders">मेरे ऑर्डर</string>
     <string name="track_product_orders">अपने उत्पाद ऑर्डर ट्रैक करें</string>

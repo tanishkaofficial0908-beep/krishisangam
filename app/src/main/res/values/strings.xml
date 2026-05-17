@@ -37,6 +37,10 @@
     <string name="manage_manager_account">Manage your node manager account</string>
     <string name="account_options">Account Options</string>
     <string name="wishlist">Wishlist</string>
+    <string name="saved_products_for_later">Saved products for later purchase</string>
+    <string name="saved">Saved</string>
+    <string name="no_wishlist_products_yet">No wishlist products yet</string>
+    <string name="tap_heart_to_save_products">Tap the heart icon on any product to save it here.</string>
     <string name="view_saved_products">View saved products</string>
     <string name="my_orders">My Orders</string>
     <string name="track_product_orders">Track your product orders</string>

@@ -69,7 +69,8 @@ fun BuyerHomeScreen(
     onSearchClick: () -> Unit,
     onCategoryClick: (String) -> Unit,
     onProfileClick: () -> Unit,
-    onCategoriesSeeAllClick: () -> Unit
+    onCategoriesSeeAllClick: () -> Unit,
+    onWishlistClick: () -> Unit
 ) {
     var showAllOffers by remember { mutableStateOf(false) }
     var selectedOffer by remember { mutableStateOf<BuyerOfferData?>(null) }
@@ -199,7 +200,8 @@ fun BuyerHomeScreen(
                 .padding(top = 22.dp, bottom = 120.dp)
         ) {
             BuyerTopHeader(
-                onProfileClick = onProfileClick
+                onProfileClick = onProfileClick,
+                onWishlistClick = onWishlistClick
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -319,62 +321,12 @@ fun BuyerHomeScreen(
 
 @Composable
 fun BuyerTopHeader(
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onWishlistClick: () -> Unit
 ) {
     var showMoreMenu by remember { mutableStateOf(false) }
-    var showWishlistDialog by remember { mutableStateOf(false) }
     var showNotificationDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
-
-    if (showWishlistDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showWishlistDialog = false
-            },
-            containerColor = DialogGreen,
-            titleContentColor = TextLight,
-            textContentColor = DialogText,
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showWishlistDialog = false
-                    }
-                ) {
-                    Text(
-                        text = "OK",
-                        color = AccentYellow,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            title = {
-                Text(
-                    text = "Wishlist",
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextLight,
-                    fontSize = 22.sp
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "❤",
-                        fontSize = 34.sp,
-                        color = AccentYellow
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = "Wishlist coming soon.",
-                        color = DialogText,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp
-                    )
-                }
-            }
-        )
-    }
 
     if (showNotificationDialog) {
         AlertDialog(
@@ -526,7 +478,7 @@ fun BuyerTopHeader(
             color = AccentYellow,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
-                showWishlistDialog = true
+                onWishlistClick()
             }
         )
 
