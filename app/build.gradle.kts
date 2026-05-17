@@ -59,6 +59,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.razorpay:checkout:1.6.41")
     implementation(libs.androidx.material3)
 
     implementation(libs.firebase.auth)

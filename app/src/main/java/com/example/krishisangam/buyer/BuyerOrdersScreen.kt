@@ -1,14 +1,9 @@
 package com.example.krishisangam.buyer
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +23,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.krishisangam.R
-import kotlinx.coroutines.delay
 
 private val OrderPrimaryGreen = Color(0xFF01AC66)
 private val OrderBackgroundColor = Color(0xFF003D22)
@@ -57,15 +50,23 @@ private val OrderTextMuted = Color(0xFFB9D8C7)
 private val OrderGlassDark = Color.White.copy(alpha = 0.095f)
 private val OrderGlassCard = Color.White.copy(alpha = 0.105f)
 private val OrderBorderGlass = Color.White.copy(alpha = 0.16f)
-private val OrderSoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
 private val OrderDeleteRed = Color(0xFFFF6B6B)
 
 @Composable
 fun BuyerOrdersScreen() {
     val orders = BuyerOrderStore.orders
 
-    var showCheckoutPopup by remember {
+    var showCheckoutScreen by remember {
         mutableStateOf(false)
+    }
+
+    if (showCheckoutScreen) {
+        BuyerCheckoutScreen(
+            onBackClick = {
+                showCheckoutScreen = false
+            }
+        )
+        return
     }
 
     val subtotal by remember {
@@ -81,13 +82,6 @@ fun BuyerOrdersScreen() {
     val platformFee = if (orders.isEmpty()) 0.0 else 15.0
     val tax = subtotal * 0.05
     val totalAmount = subtotal + packagingCharge + logisticsCharge + platformFee + tax
-
-    if (showCheckoutPopup) {
-        LaunchedEffect(Unit) {
-            delay(2800)
-            showCheckoutPopup = false
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -143,116 +137,10 @@ fun BuyerOrdersScreen() {
 
                     BuyerCheckoutButton(
                         onClick = {
-                            BuyerNotificationStore.addNotification(
-                                title = "Order Confirmed",
-                                message = "Your order has been placed successfully. Estimated total: ₹${totalAmount.toInt()}",
-                                icon = "✅"
-                            )
-
-                            showCheckoutPopup = true
+                            showCheckoutScreen = true
                         }
                     )
                 }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = showCheckoutPopup,
-            enter = slideInVertically(
-                initialOffsetY = { fullHeight ->
-                    -fullHeight
-                },
-                animationSpec = tween(durationMillis = 350)
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { fullHeight ->
-                    -fullHeight
-                },
-                animationSpec = tween(durationMillis = 280)
-            ),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(horizontal = 18.dp)
-                .padding(top = 18.dp)
-        ) {
-            CheckoutSuccessPopup(
-                totalAmount = totalAmount
-            )
-        }
-    }
-}
-
-@Composable
-fun CheckoutSuccessPopup(
-    totalAmount: Double
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(22.dp)
-            ),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = OrderPrimaryGreen
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color.White.copy(alpha = 0.22f)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            OrderPrimaryGreen,
-                            Color(0xFF00985B),
-                            Color(0xFF007A49)
-                        )
-                    )
-                )
-                .padding(horizontal = 15.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.16f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "✅",
-                    fontSize = 22.sp
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.order_confirmed),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(3.dp))
-
-                Text(
-                    text = stringResource(
-                        R.string.order_confirmed_message,
-                        totalAmount.toInt()
-                    ),
-                    fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.82f),
-                    lineHeight = 17.sp
-                )
             }
         }
     }
