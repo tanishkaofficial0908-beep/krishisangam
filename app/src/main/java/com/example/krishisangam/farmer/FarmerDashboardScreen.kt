@@ -1,9 +1,12 @@
 package com.example.krishisangam.farmer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -16,19 +19,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.krishisangam.R
 
 private val PrimaryGreen = Color(0xFF01AC66)
-private val BackgroundColor = Color(0xFFE8FAF6)
-private val LightGreen = Color(0xFFDFF8EF)
+private val BackgroundColor = Color(0xFF003D22)
+private val DeepGreen = Color(0xFF002514)
+private val DarkGreen = Color(0xFF005C32)
+private val AccentYellow = Color(0xFFFFC107)
+private val TextMuted = Color(0xFFB9D8C7)
+private val GlassDark = Color.White.copy(alpha = 0.095f)
+private val GlassSelected = Color(0xFF01AC66).copy(alpha = 0.22f)
+private val BorderGlass = Color.White.copy(alpha = 0.16f)
 
 @Composable
 fun FarmerDashboardScreen() {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var showAddProductScreen by remember { mutableStateOf(false) }
+    var selectedTab by remember {
+        mutableIntStateOf(0)
+    }
+
+    var showAddProductScreen by remember {
+        mutableStateOf(false)
+    }
 
     Scaffold(
         containerColor = BackgroundColor,
@@ -46,7 +65,15 @@ fun FarmerDashboardScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundColor)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            DarkGreen,
+                            BackgroundColor,
+                            DeepGreen
+                        )
+                    )
+                )
                 .padding(innerPadding)
         ) {
             if (showAddProductScreen) {
@@ -61,17 +88,47 @@ fun FarmerDashboardScreen() {
                 )
             } else {
                 when (selectedTab) {
-                    0 -> FarmerHomeScreen()
+                    0 -> {
+                        FarmerHomeScreen(
+                            onProductsClick = {
+                                selectedTab = 1
+                                showAddProductScreen = false
+                            },
+                            onOrdersClick = {
+                                selectedTab = 2
+                                showAddProductScreen = false
+                            },
+                            onEarningsClick = {
+                                selectedTab = 3
+                                showAddProductScreen = false
+                            }
+                        )
+                    }
 
-                    1 -> FarmerProductsScreen(
-                        onAddProductClick = {
-                            showAddProductScreen = true
-                        }
-                    )
+                    1 -> {
+                        FarmerProductsScreen(
+                            onAddProductClick = {
+                                showAddProductScreen = true
+                            }
+                        )
+                    }
 
-                    2 -> FarmerOrdersScreen()
-                    3 -> FarmerEarningsScreen()
-                    4 -> FarmerProfileScreen()
+                    2 -> {
+                        FarmerOrdersScreen()
+                    }
+
+                    3 -> {
+                        FarmerEarningsScreen()
+                    }
+
+                    4 -> {
+                        FarmerProfileScreen(
+                            onOrdersClick = {
+                                selectedTab = 2
+                                showAddProductScreen = false
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -84,63 +141,75 @@ fun FarmerBottomBar(
     onTabSelected: (Int) -> Unit
 ) {
     val items = listOf(
-        FarmerBottomBarItem(
-            title = stringResource(R.string.home),
-            icon = "🏠"
-        ),
-        FarmerBottomBarItem(
-            title = stringResource(R.string.products),
-            icon = "🌱"
-        ),
-        FarmerBottomBarItem(
-            title = stringResource(R.string.orders),
-            icon = "📦"
-        ),
-        FarmerBottomBarItem(
-            title = stringResource(R.string.earnings),
-            icon = "💰"
-        ),
-        FarmerBottomBarItem(
-            title = stringResource(R.string.profile),
-            icon = "👤"
-        )
+        Pair(stringResource(R.string.home), "🏠"),
+        Pair(stringResource(R.string.products), "🌱"),
+        Pair(stringResource(R.string.orders), "📦"),
+        Pair(stringResource(R.string.earnings), "💰"),
+        Pair(stringResource(R.string.profile), "👤")
     )
 
-    NavigationBar(
-        containerColor = Color.White
-    ) {
-        items.forEachIndexed { index, item ->
-            NavigationBarItem(
-                selected = selectedTab == index,
-                onClick = {
-                    onTabSelected(index)
-                },
-                icon = {
-                    Text(
-                        text = item.icon,
-                        fontSize = 20.sp
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.title,
-                        fontSize = 10.sp,
-                        maxLines = 1
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = PrimaryGreen,
-                    selectedTextColor = PrimaryGreen,
-                    indicatorColor = LightGreen,
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray
-                )
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(28.dp)
             )
+            .clip(RoundedCornerShape(28.dp))
+            .background(GlassDark)
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = BorderGlass
+                ),
+                shape = RoundedCornerShape(28.dp)
+            )
+    ) {
+        NavigationBar(
+            containerColor = Color.Transparent,
+            tonalElevation = 0.dp
+        ) {
+            items.forEachIndexed { index, item ->
+                val isSelected = selectedTab == index
+                val title = item.first
+                val icon = item.second
+
+                NavigationBarItem(
+                    selected = isSelected,
+                    onClick = {
+                        onTabSelected(index)
+                    },
+                    icon = {
+                        Text(
+                            text = icon,
+                            fontSize = if (isSelected) {
+                                21.sp
+                            } else {
+                                19.sp
+                            }
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = title,
+                            fontSize = 10.sp,
+                            maxLines = 1,
+                            fontWeight = if (isSelected) {
+                                FontWeight.ExtraBold
+                            } else {
+                                FontWeight.SemiBold
+                            }
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = AccentYellow,
+                        selectedTextColor = AccentYellow,
+                        indicatorColor = GlassSelected,
+                        unselectedIconColor = TextMuted,
+                        unselectedTextColor = TextMuted
+                    )
+                )
+            }
         }
     }
 }
-
-data class FarmerBottomBarItem(
-    val title: String,
-    val icon: String
-)
