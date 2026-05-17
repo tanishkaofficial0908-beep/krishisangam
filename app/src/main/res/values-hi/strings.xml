@@ -47,6 +47,11 @@
     <string name="delivery_location">डिलीवरी स्थान</string>
     <string name="manage_delivery_address">डिलीवरी पता मैनेज करें</string>
     <string name="notifications">सूचनाएं</string>
+    <string name="buyer_notifications_subtitle">ऑर्डर अपडेट और जरूरी सूचनाएं यहां दिखाई देंगी</string>
+    <string name="no_notifications_yet">अभी कोई सूचना नहीं</string>
+    <string name="notifications_will_appear_here">आपके ऑर्डर कन्फर्मेशन और अपडेट यहां दिखाई देंगे।</string>
+    <string name="order_confirmed">ऑर्डर कन्फर्म हुआ</string>
+    <string name="order_confirmed_message">आपका ऑर्डर सफलतापूर्वक प्लेस हो गया है। अनुमानित कुल राशि: ₹%1$d</string>
     <string name="manage_alerts">अलर्ट और अपडेट मैनेज करें</string>
     <string name="help_support">मदद और सहायता</string>
     <string name="contact_support">कृषि संगम सपोर्ट से संपर्क करें</string>

@@ -44,6 +44,7 @@ fun BuyerDashboardScreen() {
     var selectedTab by remember { mutableIntStateOf(0) }
     var showSearchScreen by remember { mutableStateOf(false) }
     var showWishlistScreen by remember { mutableStateOf(false) }
+    var showNotificationScreen by remember { mutableStateOf(false) }
     var selectedCategoryScreen by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -55,6 +56,7 @@ fun BuyerDashboardScreen() {
                     selectedTab = tabIndex
                     showSearchScreen = false
                     showWishlistScreen = false
+                    showNotificationScreen = false
                     selectedCategoryScreen = null
                 }
             )
@@ -84,6 +86,14 @@ fun BuyerDashboardScreen() {
                     )
                 }
 
+                showNotificationScreen -> {
+                    BuyerNotificationScreen(
+                        onBackClick = {
+                            showNotificationScreen = false
+                        }
+                    )
+                }
+
                 showSearchScreen -> {
                     BuyerSearchScreen(
                         onBackClick = {
@@ -108,27 +118,38 @@ fun BuyerDashboardScreen() {
                                 onSearchClick = {
                                     showSearchScreen = true
                                     showWishlistScreen = false
+                                    showNotificationScreen = false
                                 },
                                 onCategoryClick = { categoryName ->
                                     selectedCategoryScreen = categoryName
                                     showSearchScreen = false
                                     showWishlistScreen = false
+                                    showNotificationScreen = false
                                 },
                                 onProfileClick = {
                                     selectedTab = 4
                                     showSearchScreen = false
                                     showWishlistScreen = false
+                                    showNotificationScreen = false
                                     selectedCategoryScreen = null
                                 },
                                 onCategoriesSeeAllClick = {
                                     selectedTab = 2
                                     showSearchScreen = false
                                     showWishlistScreen = false
+                                    showNotificationScreen = false
                                     selectedCategoryScreen = null
                                 },
                                 onWishlistClick = {
                                     showWishlistScreen = true
                                     showSearchScreen = false
+                                    showNotificationScreen = false
+                                    selectedCategoryScreen = null
+                                },
+                                onNotificationClick = {
+                                    showNotificationScreen = true
+                                    showSearchScreen = false
+                                    showWishlistScreen = false
                                     selectedCategoryScreen = null
                                 }
                             )
@@ -152,6 +173,7 @@ fun BuyerDashboardScreen() {
                                     selectedTab = 3
                                     showSearchScreen = false
                                     showWishlistScreen = false
+                                    showNotificationScreen = false
                                     selectedCategoryScreen = null
                                 }
                             )

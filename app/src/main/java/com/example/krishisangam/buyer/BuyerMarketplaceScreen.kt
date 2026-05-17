@@ -669,27 +669,66 @@ fun BuyerMarketplaceProductCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = stringResource(
-                    R.string.trust_score_with_value,
-                    product.trustScore
-                ),
-                fontSize = 10.sp,
-                color = AccentYellow,
-                fontWeight = FontWeight.ExtraBold,
-                maxLines = 1,
-                modifier = Modifier
-                    .background(SoftYellow, RoundedCornerShape(18.dp))
-                    .border(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = AccentYellow.copy(alpha = 0.22f)
-                        ),
-                        shape = RoundedCornerShape(18.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            Spacer(modifier = Modifier.weight(1f))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(34.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(SoftYellow)
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = AccentYellow.copy(alpha = 0.35f)
+                            ),
+                            shape = RoundedCornerShape(18.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.trust_score_with_value,
+                            product.trustScore
+                        ),
+                        fontSize = 9.sp,
+                        color = AccentYellow,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryGreen)
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.22f)
+                            ),
+                            shape = CircleShape
+                        )
+                        .clickable {
+                            onAddClick()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            }
             Spacer(modifier = Modifier.weight(1f))
 
             Row(
