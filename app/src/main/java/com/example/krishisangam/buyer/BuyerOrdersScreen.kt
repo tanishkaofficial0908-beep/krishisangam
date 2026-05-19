@@ -55,6 +55,21 @@ private val OrderDeleteRed = Color(0xFFFF6B6B)
 @Composable
 fun BuyerOrdersScreen() {
     val orders = BuyerOrderStore.orders
+    val confirmedOrders = BuyerConfirmedOrderStore.confirmedOrders
+
+    var selectedTrackOrder by remember {
+        mutableStateOf<BuyerConfirmedOrder?>(null)
+    }
+
+    if (selectedTrackOrder != null) {
+        BuyerTrackOrderScreen(
+            order = selectedTrackOrder!!,
+            onBackClick = {
+                selectedTrackOrder = null
+            }
+        )
+        return
+    }
 
     var showCheckoutScreen by remember {
         mutableStateOf(false)
@@ -63,6 +78,9 @@ fun BuyerOrdersScreen() {
     if (showCheckoutScreen) {
         BuyerCheckoutScreen(
             onBackClick = {
+                showCheckoutScreen = false
+            },
+            onOrderCompleted = {
                 showCheckoutScreen = false
             }
         )
@@ -105,7 +123,7 @@ fun BuyerOrdersScreen() {
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            if (orders.isEmpty()) {
+            if (orders.isEmpty() && confirmedOrders.isEmpty()) {
                 BuyerEmptyOrdersMessage()
             } else {
                 Column(
@@ -114,32 +132,60 @@ fun BuyerOrdersScreen() {
                         .verticalScroll(rememberScrollState())
                         .padding(bottom = 110.dp)
                 ) {
-                    orders.forEach { order ->
-                        BuyerOrderItemCard(
-                            order = order
+                    if (confirmedOrders.isNotEmpty()) {
+                        Text(
+                            text = "Confirmed Orders",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = OrderTextLight
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        confirmedOrders.forEach { confirmedOrder ->
+                            BuyerConfirmedOrderCard(
+                                order = confirmedOrder,
+                                onTrackOrderClick = {
+                                    selectedTrackOrder = confirmedOrder
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    if (orders.isNotEmpty()) {
+                        orders.forEach { order ->
+                            BuyerOrderItemCard(
+                                order = order
+                            )
 
-                    BuyerBillSummaryCard(
-                        subtotal = subtotal,
-                        packagingCharge = packagingCharge,
-                        logisticsCharge = logisticsCharge,
-                        platformFee = platformFee,
-                        tax = tax,
-                        totalAmount = totalAmount
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    BuyerCheckoutButton(
-                        onClick = {
-                            showCheckoutScreen = true
+                            Spacer(modifier = Modifier.height(14.dp))
                         }
-                    )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        BuyerBillSummaryCard(
+                            subtotal = subtotal,
+                            packagingCharge = packagingCharge,
+                            logisticsCharge = logisticsCharge,
+                            platformFee = platformFee,
+                            tax = tax,
+                            totalAmount = totalAmount
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        BuyerCheckoutButton(
+                            onClick = {
+                                showCheckoutScreen = true
+                            }
+                        )
+                    } else {
+                        BuyerNewCartHintCard()
+                    }
                 }
             }
         }
@@ -605,4 +651,168 @@ fun extractOrderPrice(priceText: String): Double {
         .trim()
 
     return cleanedPrice.toDoubleOrNull() ?: 0.0
+}
+
+@Composable
+fun BuyerConfirmedOrderCard(
+    order: BuyerConfirmedOrder,
+    onTrackOrderClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = OrderGlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = OrderBorderGlass
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Text(
+                text = "Confirmed Order",
+                fontSize = 13.sp,
+                color = OrderTextMuted
+            )
+
+            Text(
+                text = order.orderId,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = OrderAccentYellow
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Status: ${formatOrderStatus(order.orderStatus)}",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = OrderTextLight
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            order.items.forEach { item ->
+                Text(
+                    text = "${item.emoji} ${item.name} × ${item.quantity}",
+                    fontSize = 13.sp,
+                    color = OrderTextMuted,
+                    lineHeight = 18.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Advance Paid",
+                    fontSize = 13.sp,
+                    color = OrderTextMuted,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = "₹${order.advanceAmount}",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OrderAccentYellow
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Remaining",
+                    fontSize = 13.sp,
+                    color = OrderTextMuted,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = "₹${order.remainingAmount}",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OrderTextLight
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(OrderPrimaryGreen)
+                    .clickable {
+                        onTrackOrderClick()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Track Order",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BuyerNewCartHintCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = OrderGlassCard
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = OrderBorderGlass
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Text(
+                text = "Add more products",
+                fontSize = 19.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = OrderTextLight
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "Your previous order is confirmed. Add new products from Marketplace to start a new bill below this order.",
+                fontSize = 13.sp,
+                color = OrderTextMuted,
+                lineHeight = 19.sp
+            )
+        }
+    }
+}
+
+fun formatOrderStatus(status: String): String {
+    return when (status) {
+        "order_placed" -> "Order Placed"
+        "agro_node_verified" -> "Agro Node Verified"
+        "quality_checked" -> "Quality Checked & Packaging"
+        "dispatch_planned" -> "Dispatch Planned"
+        "out_for_delivery" -> "Out for Delivery"
+        "delivered" -> "Delivered"
+        "completed" -> "Completed"
+        else -> "Order Placed"
+    }
 }

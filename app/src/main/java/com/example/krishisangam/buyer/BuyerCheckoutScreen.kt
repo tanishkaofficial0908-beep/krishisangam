@@ -2,7 +2,9 @@ package com.example.krishisangam.buyer
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,7 +16,16 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,11 +54,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.krishisangam.RazorpayConfig
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import kotlinx.coroutines.delay
+import com.razorpay.Checkout
+import org.json.JSONObject
 import kotlin.math.roundToInt
 
 private val CheckoutPrimaryGreen = Color(0xFF01AC66)
@@ -63,14 +76,17 @@ private val CheckoutErrorRed = Color(0xFFFF6B6B)
 
 @Composable
 fun BuyerCheckoutScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onOrderCompleted: () -> Unit
 ) {
     val context = LocalContext.current
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
-    val orders = BuyerOrderStore.orders
+    val checkoutItems = remember {
+        BuyerOrderStore.orders.toList()
+    }
 
     var fullName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -88,6 +104,9 @@ fun BuyerCheckoutScreen(
     var showSuccessPopup by remember { mutableStateOf(false) }
 
     val isExactLocationCaptured = latitude != null && longitude != null
+
+    val paymentSuccessId = BuyerPaymentStore.paymentSuccessId.value
+    val paymentErrorMessage = BuyerPaymentStore.paymentErrorMessage.value
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -118,24 +137,51 @@ fun BuyerCheckoutScreen(
 
     val subtotal by remember {
         derivedStateOf {
-            orders.fold(0.0) { total, order ->
+            checkoutItems.fold(0.0) { total, order ->
                 total + (extractOrderPrice(order.price) * order.quantity)
             }
         }
     }
 
-    val packagingCharge = if (orders.isEmpty()) 0.0 else 35.0
-    val logisticsCharge = if (orders.isEmpty()) 0.0 else 80.0
-    val platformFee = if (orders.isEmpty()) 0.0 else 15.0
+    val packagingCharge = if (checkoutItems.isEmpty()) 0.0 else 35.0
+    val logisticsCharge = if (checkoutItems.isEmpty()) 0.0 else 80.0
+    val platformFee = if (checkoutItems.isEmpty()) 0.0 else 15.0
     val tax = subtotal * 0.05
     val totalAmount = subtotal + packagingCharge + logisticsCharge + platformFee + tax
     val advanceAmount = totalAmount * 0.50
     val remainingAmount = totalAmount - advanceAmount
 
-    if (showSuccessPopup) {
-        LaunchedEffect(Unit) {
-            delay(2800)
-            showSuccessPopup = false
+    LaunchedEffect(paymentSuccessId) {
+        if (paymentSuccessId != null) {
+
+            BuyerConfirmedOrderStore.addConfirmedOrder(
+                items = checkoutItems,
+                totalAmount = totalAmount,
+                advanceAmount = advanceAmount,
+                remainingAmount = remainingAmount,
+                paymentId = paymentSuccessId
+            )
+
+            BuyerNotificationStore.addNotification(
+                title = "Advance Payment Successful",
+                message = "Your 50% advance payment is successful. Order has been placed. Estimated delivery within 7 days after Agro Node verification.",
+                icon = "✅"
+            )
+
+            BuyerOrderStore.clearOrders()
+
+            showSuccessPopup = true
+
+            BuyerPaymentStore.clear()
+
+            onOrderCompleted()
+        }
+    }
+
+    LaunchedEffect(paymentErrorMessage) {
+        if (paymentErrorMessage != null) {
+            validationMessage = "Payment failed. Please try again."
+            BuyerPaymentStore.clear()
         }
     }
 
@@ -238,8 +284,6 @@ fun BuyerCheckoutScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
-
             CheckoutBillSplitCard(
                 subtotal = subtotal,
                 packagingCharge = packagingCharge,
@@ -262,7 +306,13 @@ fun BuyerCheckoutScreen(
 
                 Text(
                     text = validationMessage,
-                    color = if (isExactLocationCaptured) CheckoutAccentYellow else CheckoutErrorRed,
+                    color = if (
+                        validationMessage.contains("successfully", ignoreCase = true)
+                    ) {
+                        CheckoutAccentYellow
+                    } else {
+                        CheckoutErrorRed
+                    },
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 18.sp
@@ -292,13 +342,21 @@ fun BuyerCheckoutScreen(
                     } else {
                         validationMessage = ""
 
-                        BuyerNotificationStore.addNotification(
-                            title = "Order Confirmed",
-                            message = "Your order request has been placed. 50% advance: ₹${advanceAmount.roundToInt()}, remaining after delivery: ₹${remainingAmount.roundToInt()}. Estimated delivery within 7 days after Agro Node verification.",
-                            icon = "✅"
-                        )
+                        val activity = context.findActivity()
 
-                        showSuccessPopup = true
+                        if (activity == null) {
+                            validationMessage = "Unable to start payment. Please try again."
+                        } else {
+                            startRazorpayPayment(
+                                activity = activity,
+                                advanceAmount = advanceAmount,
+                                fullName = fullName,
+                                phoneNumber = phoneNumber,
+                                onError = { error ->
+                                    validationMessage = error
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -306,7 +364,7 @@ fun BuyerCheckoutScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Next step: Razorpay test payment will open from this button after validation.",
+                text = "Razorpay test payment will open after validation. Final order record will be saved permanently in Firebase in the next step.",
                 color = CheckoutTextMuted,
                 fontSize = 12.sp,
                 lineHeight = 18.sp
@@ -963,7 +1021,7 @@ fun CheckoutSuccessPopup(
                     .padding(start = 12.dp)
             ) {
                 Text(
-                    text = "Order Confirmed",
+                    text = "Payment Successful",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
@@ -972,7 +1030,7 @@ fun CheckoutSuccessPopup(
                 Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
-                    text = "Advance ₹${advanceAmount.roundToInt()} marked for payment. Remaining ₹${remainingAmount.roundToInt()} after delivery.",
+                    text = "Advance ₹${advanceAmount.roundToInt()} paid. Remaining ₹${remainingAmount.roundToInt()} after delivery.",
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.82f),
                     lineHeight = 17.sp
@@ -999,6 +1057,53 @@ fun validateCheckoutForm(
             pincode.isNotBlank()
 
     return basicDetailsFilled && (isExactLocationCaptured || manualAddressFilled)
+}
+
+private fun startRazorpayPayment(
+    activity: Activity,
+    advanceAmount: Double,
+    fullName: String,
+    phoneNumber: String,
+    onError: (String) -> Unit
+) {
+    try {
+        val checkout = Checkout()
+        checkout.setKeyID(RazorpayConfig.KEY_ID)
+
+        val amountInPaise = advanceAmount.roundToInt() * 100
+
+        val options = JSONObject().apply {
+            put("name", "Krishi Sangam")
+            put("description", "50% Advance Payment")
+            put("currency", "INR")
+            put("amount", amountInPaise)
+
+            val prefill = JSONObject().apply {
+                put("name", fullName)
+                put("contact", phoneNumber)
+            }
+
+            put("prefill", prefill)
+        }
+
+        checkout.open(activity, options)
+    } catch (exception: Exception) {
+        onError("Unable to open Razorpay payment. Please try again.")
+    }
+}
+
+private fun Context.findActivity(): Activity? {
+    var currentContext = this
+
+    while (currentContext is ContextWrapper) {
+        if (currentContext is Activity) {
+            return currentContext
+        }
+
+        currentContext = currentContext.baseContext
+    }
+
+    return null
 }
 
 @SuppressLint("MissingPermission")

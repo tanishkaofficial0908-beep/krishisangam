@@ -40,12 +40,15 @@ private val GlassSelected = Color(0xFF01AC66).copy(alpha = 0.22f)
 private val BorderGlass = Color.White.copy(alpha = 0.16f)
 
 @Composable
-fun BuyerDashboardScreen() {
+fun BuyerDashboardScreen(
+    onLogout: () -> Unit = {}
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var showSearchScreen by remember { mutableStateOf(false) }
     var showWishlistScreen by remember { mutableStateOf(false) }
     var showNotificationScreen by remember { mutableStateOf(false) }
     var selectedCategoryScreen by remember { mutableStateOf<String?>(null) }
+    var accountScreenMode by remember { mutableStateOf<BuyerAccountScreenMode?>(null) }
 
     Scaffold(
         containerColor = BackgroundColor,
@@ -58,6 +61,7 @@ fun BuyerDashboardScreen() {
                     showWishlistScreen = false
                     showNotificationScreen = false
                     selectedCategoryScreen = null
+                    accountScreenMode = null
                 }
             )
         }
@@ -78,6 +82,15 @@ fun BuyerDashboardScreen() {
                 .padding(innerPadding)
         ) {
             when {
+                accountScreenMode != null -> {
+                    BuyerAccountDetailsScreen(
+                        mode = accountScreenMode!!,
+                        onBackClick = {
+                            accountScreenMode = null
+                        }
+                    )
+                }
+
                 showWishlistScreen -> {
                     BuyerWishlistScreen(
                         onBackClick = {
@@ -169,12 +182,29 @@ fun BuyerDashboardScreen() {
 
                         4 -> {
                             BuyerProfileScreen(
-                                onOrdersClick = {
+                                onEditProfileClick = {
+                                    accountScreenMode = BuyerAccountScreenMode.EDIT_PROFILE
+                                },
+                                onDeliveryLocationClick = {
+                                    accountScreenMode = BuyerAccountScreenMode.DELIVERY_LOCATION_ONLY
+                                },
+                                onMyOrdersClick = {
                                     selectedTab = 3
                                     showSearchScreen = false
                                     showWishlistScreen = false
                                     showNotificationScreen = false
                                     selectedCategoryScreen = null
+                                    accountScreenMode = null
+                                },
+                                onLogout = {
+                                    selectedTab = 0
+                                    showSearchScreen = false
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
+                                    selectedCategoryScreen = null
+                                    accountScreenMode = null
+
+                                    onLogout()
                                 }
                             )
                         }

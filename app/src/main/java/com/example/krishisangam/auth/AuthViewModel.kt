@@ -1,17 +1,19 @@
 package com.example.krishisangam.auth
 
-import com.google.firebase.auth.userProfileChangeRequest
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 enum class UserRole {
     BUYER,
@@ -30,6 +32,7 @@ data class AuthUiState(
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     var uiState by mutableStateOf(
         AuthUiState(currentUser = auth.currentUser)
@@ -45,7 +48,6 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signUp(
-
         firstName: String,
         lastName: String,
         email: String,
@@ -53,23 +55,17 @@ class AuthViewModel : ViewModel() {
         confirmPassword: String,
         onSuccess: () -> Unit
     ) {
-        val user = auth.currentUser
+        val trimmedFirstName = firstName.trim()
+        val trimmedLastName = lastName.trim()
+        val trimmedEmail = email.trim()
 
-        val profileUpdates = userProfileChangeRequest {
-            displayName = "$firstName $lastName"
-        }
-
-        user?.updateProfile(profileUpdates)
-            ?.addOnCompleteListener {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    currentUser = user,
-                    message = "Account created successfully",
-                    isError = false
-                )
-                onSuccess()
-            }
-        if (firstName.isBlank() || lastName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+        if (
+            trimmedFirstName.isBlank() ||
+            trimmedLastName.isBlank() ||
+            trimmedEmail.isBlank() ||
+            password.isBlank() ||
+            confirmPassword.isBlank()
+        ) {
             showError("Please fill all fields")
             return
         }
@@ -84,21 +80,62 @@ class AuthViewModel : ViewModel() {
             return
         }
 
-        uiState = uiState.copy(isLoading = true, message = null)
+        val selectedRole = uiState.selectedRole ?: UserRole.BUYER
 
-        auth.createUserWithEmailAndPassword(email.trim(), password)
+        uiState = uiState.copy(
+            isLoading = true,
+            message = null,
+            isError = false
+        )
+
+        auth.createUserWithEmailAndPassword(trimmedEmail, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    auth.currentUser?.sendEmailVerification()
+                    val user = auth.currentUser
 
-                    uiState = uiState.copy(
-                        isLoading = false,
-                        currentUser = auth.currentUser,
-                        message = "Account created. Verification email sent.",
-                        isError = false
-                    )
+                    if (user == null) {
+                        showError("Account created but user profile was not found.")
+                        return@addOnCompleteListener
+                    }
 
-                    onSuccess()
+                    val fullName = "$trimmedFirstName $trimmedLastName"
+
+                    val profileUpdates = UserProfileChangeRequest.Builder()
+                        .setDisplayName(fullName)
+                        .build()
+
+                    user.updateProfile(profileUpdates)
+                        .addOnCompleteListener { profileTask ->
+                            if (profileTask.isSuccessful) {
+                                saveUserProfileToFirestore(
+                                    user = user,
+                                    firstName = trimmedFirstName,
+                                    lastName = trimmedLastName,
+                                    email = trimmedEmail,
+                                    role = selectedRole,
+                                    onSuccess = {
+                                        user.sendEmailVerification()
+                                            .addOnCompleteListener {
+                                                uiState = uiState.copy(
+                                                    isLoading = false,
+                                                    currentUser = auth.currentUser,
+                                                    message = "Account created. Verification email sent.",
+                                                    isError = false
+                                                )
+                                                onSuccess()
+                                            }
+                                    },
+                                    onFailure = { errorMessage ->
+                                        showError(errorMessage)
+                                    }
+                                )
+                            } else {
+                                showError(
+                                    profileTask.exception?.message
+                                        ?: "Account created but failed to save profile name."
+                                )
+                            }
+                        }
                 } else {
                     showError(getReadableAuthError(task.exception))
                 }
@@ -115,7 +152,11 @@ class AuthViewModel : ViewModel() {
             return
         }
 
-        uiState = uiState.copy(isLoading = true, message = null)
+        uiState = uiState.copy(
+            isLoading = true,
+            message = null,
+            isError = false
+        )
 
         auth.signInWithEmailAndPassword(email.trim(), password)
             .addOnCompleteListener { task ->
@@ -146,7 +187,11 @@ class AuthViewModel : ViewModel() {
             return
         }
 
-        uiState = uiState.copy(isLoading = true, message = null)
+        uiState = uiState.copy(
+            isLoading = true,
+            message = null,
+            isError = false
+        )
 
         auth.sendPasswordResetEmail(email.trim())
             .addOnCompleteListener { task ->
@@ -170,7 +215,11 @@ class AuthViewModel : ViewModel() {
             return
         }
 
-        uiState = uiState.copy(isLoading = true, message = null)
+        uiState = uiState.copy(
+            isLoading = true,
+            message = null,
+            isError = false
+        )
 
         user.sendEmailVerification()
             .addOnCompleteListener { task ->
@@ -191,6 +240,43 @@ class AuthViewModel : ViewModel() {
         uiState = AuthUiState()
     }
 
+    private fun saveUserProfileToFirestore(
+        user: FirebaseUser,
+        firstName: String,
+        lastName: String,
+        email: String,
+        role: UserRole,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val uid = user.uid
+        val fullName = "$firstName $lastName"
+
+        val userProfile = hashMapOf(
+            "uid" to uid,
+            "firstName" to firstName,
+            "lastName" to lastName,
+            "fullName" to fullName,
+            "email" to email,
+            "role" to role.name.lowercase(),
+            "phone" to "",
+            "createdAt" to FieldValue.serverTimestamp(),
+            "updatedAt" to FieldValue.serverTimestamp()
+        )
+
+        firestore.collection("users")
+            .document(uid)
+            .set(userProfile)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(
+                    exception.message ?: "Account created but failed to save user profile."
+                )
+            }
+    }
+
     private fun showError(message: String) {
         uiState = uiState.copy(
             isLoading = false,
@@ -198,22 +284,23 @@ class AuthViewModel : ViewModel() {
             isError = true
         )
     }
+
     private fun getReadableAuthError(exception: Exception?): String {
         return when (exception) {
-            is FirebaseAuthInvalidUserException -> {
-                "This account does not exist. Please create an account first."
+            is FirebaseAuthWeakPasswordException -> {
+                "Password is too weak. Use at least 6 characters."
             }
 
             is FirebaseAuthInvalidCredentialsException -> {
                 "Wrong email or password. Please check and try again."
             }
 
-            is FirebaseAuthUserCollisionException -> {
-                "This email is already registered. Please sign in instead."
+            is FirebaseAuthInvalidUserException -> {
+                "This account does not exist. Please create an account first."
             }
 
-            is FirebaseAuthWeakPasswordException -> {
-                "Password is too weak. Use at least 6 characters."
+            is FirebaseAuthUserCollisionException -> {
+                "This email is already registered. Please sign in instead."
             }
 
             is FirebaseNetworkException -> {
@@ -221,7 +308,7 @@ class AuthViewModel : ViewModel() {
             }
 
             else -> {
-                "Something went wrong. Please try again."
+                exception?.message ?: "Something went wrong. Please try again."
             }
         }
     }

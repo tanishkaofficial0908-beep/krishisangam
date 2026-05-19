@@ -59,7 +59,10 @@ private val RedText = Color(0xFFFF6B6B)
 
 @Composable
 fun BuyerProfileScreen(
-    onOrdersClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onDeliveryLocationClick: () -> Unit,
+    onMyOrdersClick: () -> Unit,
+    onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -72,18 +75,6 @@ fun BuyerProfileScreen(
         mutableStateOf(LanguageManager.getSavedLanguage(context))
     }
 
-    var showWishlistDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showDeliveryDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showNotificationDialog by remember {
-        mutableStateOf(false)
-    }
-
     var showHelpDialog by remember {
         mutableStateOf(false)
     }
@@ -94,39 +85,6 @@ fun BuyerProfileScreen(
 
     val buyerName = currentUser?.displayName ?: stringResource(R.string.buyer)
     val buyerEmail = currentUser?.email ?: "buyer@krishisangam.com"
-
-    if (showWishlistDialog) {
-        BuyerProfileInfoDialog(
-            title = stringResource(R.string.wishlist),
-            emoji = "❤️",
-            message = "Wishlist feature is coming soon. Saved products will appear here after the wishlist screen is connected.",
-            onDismiss = {
-                showWishlistDialog = false
-            }
-        )
-    }
-
-    if (showDeliveryDialog) {
-        BuyerProfileInfoDialog(
-            title = stringResource(R.string.delivery_location),
-            emoji = "📍",
-            message = "Delivery location management is coming soon. Later, buyers will be able to add and update delivery addresses here.",
-            onDismiss = {
-                showDeliveryDialog = false
-            }
-        )
-    }
-
-    if (showNotificationDialog) {
-        BuyerProfileInfoDialog(
-            title = stringResource(R.string.notifications),
-            emoji = "🔔",
-            message = "No notifications yet. Order updates and marketplace alerts will appear here later.",
-            onDismiss = {
-                showNotificationDialog = false
-            }
-        )
-    }
 
     if (showHelpDialog) {
         BuyerProfileInfoDialog(
@@ -152,6 +110,7 @@ fun BuyerProfileScreen(
                     onClick = {
                         showLogoutDialog = false
                         FirebaseAuth.getInstance().signOut()
+                        onLogout()
                     }
                 ) {
                     Text(
@@ -257,22 +216,11 @@ fun BuyerProfileScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             BuyerProfileOptionCard(
-                icon = "🌐",
-                title = stringResource(R.string.app_language),
-                subtitle = stringResource(R.string.change_app_language),
+                icon = "✏️",
+                title = "Edit Profile",
+                subtitle = "Update name and delivery details",
                 onClick = {
-                    showLanguageSheet = true
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            BuyerProfileOptionCard(
-                icon = "❤️",
-                title = stringResource(R.string.wishlist),
-                subtitle = stringResource(R.string.view_saved_products),
-                onClick = {
-                    showWishlistDialog = true
+                    onEditProfileClick()
                 }
             )
 
@@ -283,7 +231,7 @@ fun BuyerProfileScreen(
                 title = stringResource(R.string.my_orders),
                 subtitle = stringResource(R.string.track_product_orders),
                 onClick = {
-                    onOrdersClick()
+                    onMyOrdersClick()
                 }
             )
 
@@ -294,18 +242,7 @@ fun BuyerProfileScreen(
                 title = stringResource(R.string.delivery_location),
                 subtitle = stringResource(R.string.manage_delivery_address),
                 onClick = {
-                    showDeliveryDialog = true
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            BuyerProfileOptionCard(
-                icon = "🔔",
-                title = stringResource(R.string.notifications),
-                subtitle = stringResource(R.string.manage_alerts),
-                onClick = {
-                    showNotificationDialog = true
+                    onDeliveryLocationClick()
                 }
             )
 
@@ -419,28 +356,6 @@ fun BuyerProfileHeaderCard(
                     fontSize = 13.sp,
                     color = TextMuted,
                     maxLines = 1
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = stringResource(R.string.buyer_account),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = AccentYellow,
-                    modifier = Modifier
-                        .background(
-                            AccentYellow.copy(alpha = 0.16f),
-                            RoundedCornerShape(18.dp)
-                        )
-                        .border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = AccentYellow.copy(alpha = 0.22f)
-                            ),
-                            shape = RoundedCornerShape(18.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 )
             }
         }

@@ -121,7 +121,18 @@ fun AuthNavGraph() {
         }
 
         composable(AuthRoutes.BUYER_HOME) {
-            BuyerDashboardScreen()
+            BuyerDashboardScreen(
+                onLogout = {
+                    authViewModel.signOut()
+
+                    navController.navigate(AuthRoutes.ROLE) {
+                        popUpTo(AuthRoutes.BUYER_HOME) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
 
         composable(AuthRoutes.FARMER_HOME) {
