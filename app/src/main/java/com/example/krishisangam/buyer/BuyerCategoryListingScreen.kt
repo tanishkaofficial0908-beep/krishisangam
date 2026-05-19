@@ -29,7 +29,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -81,10 +80,6 @@ fun BuyerCategoryListingScreen(
 
     var searchText by remember {
         mutableStateOf("")
-    }
-
-    val wishlistItems = remember {
-        mutableStateListOf<String>()
     }
 
     DisposableEffect(Unit) {
@@ -210,16 +205,23 @@ fun BuyerCategoryListingScreen(
                     ) { product ->
                         ApprovedCategoryProductCard(
                             product = product,
-                            isWishlisted = wishlistItems.contains(product.productId),
+                            isWishlisted = BuyerWishlistStore.isWishlisted(product),
                             onWishlistClick = {
-                                if (wishlistItems.contains(product.productId)) {
-                                    wishlistItems.remove(product.productId)
-                                } else {
-                                    wishlistItems.add(product.productId)
-                                }
+                                BuyerWishlistStore.toggleWishlist(product)
                             },
                             onAddClick = {
-                                BuyerOrderStore.addOrderFromProduct(product)
+                                BuyerOrderStore.addOrderFromProduct(
+                                    product = product,
+                                    fallbackProductName = product.name.ifBlank {
+                                        "Product"
+                                    },
+                                    fallbackCategoryName = product.category.ifBlank {
+                                        "Category"
+                                    },
+                                    fallbackPrice = product.price.ifBlank {
+                                        "₹0"
+                                    }
+                                )
                             }
                         )
                     }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,12 +18,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,17 +50,23 @@ private val OrderTextMuted = Color(0xFFB9D8C7)
 private val OrderGlassDark = Color.White.copy(alpha = 0.095f)
 private val OrderGlassCard = Color.White.copy(alpha = 0.105f)
 private val OrderBorderGlass = Color.White.copy(alpha = 0.16f)
-private val OrderDialogGreen = Color(0xFF123D2B)
-private val OrderDialogText = Color(0xFFD8EDE3)
-private val OrderSoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
 private val OrderDeleteRed = Color(0xFFFF6B6B)
 
 @Composable
 fun BuyerOrdersScreen() {
     val orders = BuyerOrderStore.orders
 
-    var showCheckoutDialog by remember {
+    var showCheckoutScreen by remember {
         mutableStateOf(false)
+    }
+
+    if (showCheckoutScreen) {
+        BuyerCheckoutScreen(
+            onBackClick = {
+                showCheckoutScreen = false
+            }
+        )
+        return
     }
 
     val subtotal by remember {
@@ -79,73 +82,6 @@ fun BuyerOrdersScreen() {
     val platformFee = if (orders.isEmpty()) 0.0 else 15.0
     val tax = subtotal * 0.05
     val totalAmount = subtotal + packagingCharge + logisticsCharge + platformFee + tax
-
-    if (showCheckoutDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showCheckoutDialog = false
-            },
-            containerColor = OrderDialogGreen,
-            titleContentColor = OrderTextLight,
-            textContentColor = OrderDialogText,
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showCheckoutDialog = false
-                    }
-                ) {
-                    Text(
-                        text = "OK",
-                        color = OrderAccentYellow,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            title = {
-                Text(
-                    text = "Checkout Coming Soon",
-                    color = OrderTextLight,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 22.sp
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "🛒",
-                        fontSize = 36.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Your order summary is ready.",
-                        color = OrderTextLight,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Payment and final order confirmation will be connected in the next version.",
-                        color = OrderDialogText,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Estimated total: ₹${totalAmount.toInt()}",
-                        color = OrderAccentYellow,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 15.sp
-                    )
-                }
-            }
-        )
-    }
 
     Box(
         modifier = Modifier
@@ -201,7 +137,7 @@ fun BuyerOrdersScreen() {
 
                     BuyerCheckoutButton(
                         onClick = {
-                            showCheckoutDialog = true
+                            showCheckoutScreen = true
                         }
                     )
                 }

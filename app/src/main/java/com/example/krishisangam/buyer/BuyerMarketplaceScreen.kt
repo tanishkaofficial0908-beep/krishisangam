@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
@@ -31,7 +32,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -88,10 +88,6 @@ fun BuyerMarketplaceScreen() {
 
     var showBannerDialog by remember {
         mutableStateOf(false)
-    }
-
-    val wishlistedItems = remember {
-        mutableStateListOf<String>()
     }
 
     DisposableEffect(Unit) {
@@ -211,7 +207,8 @@ fun BuyerMarketplaceScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 18.dp)
+                .padding(horizontal = 18.dp)
+                .padding(top = 18.dp)
         ) {
             Text(
                 text = stringResource(R.string.marketplace_title),
@@ -241,68 +238,89 @@ fun BuyerMarketplaceScreen() {
                 }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            MarketplaceOfferBanner(
-                onClick = {
-                    showBannerDialog = true
-                }
-            )
-
-            if (errorMessage.isNotBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = errorMessage,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ErrorRed
-                )
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 130.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.approved_products),
-                    fontSize = 21.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextLight,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Text(
-                    text = if (searchText.isBlank()) {
-                        stringResource(
-                            R.string.items_count,
-                            approvedProducts.size
-                        )
-                    } else {
-                        "${displayedProducts.size} found"
-                    },
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = AccentYellow
-                )
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            if (displayedProducts.isEmpty()) {
-                EmptyMarketplaceState(
-                    isSearching = searchText.isNotBlank()
-                )
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 130.dp)
+                item(
+                    span = {
+                        GridItemSpan(maxLineSpan)
+                    }
                 ) {
+                    MarketplaceOfferBanner(
+                        onClick = {
+                            showBannerDialog = true
+                        }
+                    )
+                }
+
+                if (errorMessage.isNotBlank()) {
+                    item(
+                        span = {
+                            GridItemSpan(maxLineSpan)
+                        }
+                    ) {
+                        Text(
+                            text = errorMessage,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ErrorRed,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+
+                item(
+                    span = {
+                        GridItemSpan(maxLineSpan)
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.approved_products),
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = TextLight,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Text(
+                            text = if (searchText.isBlank()) {
+                                stringResource(
+                                    R.string.items_count,
+                                    approvedProducts.size
+                                )
+                            } else {
+                                "${displayedProducts.size} found"
+                            },
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = AccentYellow
+                        )
+                    }
+                }
+
+                if (displayedProducts.isEmpty()) {
+                    item(
+                        span = {
+                            GridItemSpan(maxLineSpan)
+                        }
+                    ) {
+                        EmptyMarketplaceState(
+                            isSearching = searchText.isNotBlank()
+                        )
+                    }
+                } else {
                     items(
                         items = displayedProducts,
                         key = { product ->
@@ -313,16 +331,23 @@ fun BuyerMarketplaceScreen() {
                     ) { product ->
                         BuyerMarketplaceProductCard(
                             product = product,
-                            isWishlisted = wishlistedItems.contains(product.productId),
+                            isWishlisted = BuyerWishlistStore.isWishlisted(product),
                             onWishlistClick = {
-                                if (wishlistedItems.contains(product.productId)) {
-                                    wishlistedItems.remove(product.productId)
-                                } else {
-                                    wishlistedItems.add(product.productId)
-                                }
+                                BuyerWishlistStore.toggleWishlist(product)
                             },
                             onAddClick = {
-                                BuyerOrderStore.addOrderFromProduct(product)
+                                BuyerOrderStore.addOrderFromProduct(
+                                    product = product,
+                                    fallbackProductName = product.name.ifBlank {
+                                        "Product"
+                                    },
+                                    fallbackCategoryName = product.category.ifBlank {
+                                        "Category"
+                                    },
+                                    fallbackPrice = product.price.ifBlank {
+                                        "₹0"
+                                    }
+                                )
                             }
                         )
                     }
@@ -511,7 +536,7 @@ fun BuyerMarketplaceProductCard(
 ) {
     Card(
         modifier = Modifier
-            .height(245.dp)
+            .height(270.dp)
             .shadow(
                 elevation = 6.dp,
                 shape = RoundedCornerShape(22.dp)
@@ -644,27 +669,66 @@ fun BuyerMarketplaceProductCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = stringResource(
-                    R.string.trust_score_with_value,
-                    product.trustScore
-                ),
-                fontSize = 10.sp,
-                color = AccentYellow,
-                fontWeight = FontWeight.ExtraBold,
-                maxLines = 1,
-                modifier = Modifier
-                    .background(SoftYellow, RoundedCornerShape(18.dp))
-                    .border(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = AccentYellow.copy(alpha = 0.22f)
-                        ),
-                        shape = RoundedCornerShape(18.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            Spacer(modifier = Modifier.weight(1f))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(34.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(SoftYellow)
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = AccentYellow.copy(alpha = 0.35f)
+                            ),
+                            shape = RoundedCornerShape(18.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.trust_score_with_value,
+                            product.trustScore
+                        ),
+                        fontSize = 9.sp,
+                        color = AccentYellow,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 1
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryGreen)
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.22f)
+                            ),
+                            shape = CircleShape
+                        )
+                        .clickable {
+                            onAddClick()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            }
             Spacer(modifier = Modifier.weight(1f))
 
             Row(
@@ -689,13 +753,13 @@ fun BuyerMarketplaceProductCard(
 
                 Box(
                     modifier = Modifier
-                        .size(31.dp)
+                        .size(34.dp)
                         .clip(CircleShape)
                         .background(PrimaryGreen)
                         .border(
                             border = BorderStroke(
                                 width = 1.dp,
-                                color = Color.White.copy(alpha = 0.18f)
+                                color = Color.White.copy(alpha = 0.22f)
                             ),
                             shape = CircleShape
                         )
@@ -707,7 +771,7 @@ fun BuyerMarketplaceProductCard(
                     Text(
                         text = "+",
                         color = Color.White,
-                        fontSize = 19.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
                 }

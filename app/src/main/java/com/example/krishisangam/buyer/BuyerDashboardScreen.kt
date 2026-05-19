@@ -43,6 +43,8 @@ private val BorderGlass = Color.White.copy(alpha = 0.16f)
 fun BuyerDashboardScreen() {
     var selectedTab by remember { mutableIntStateOf(0) }
     var showSearchScreen by remember { mutableStateOf(false) }
+    var showWishlistScreen by remember { mutableStateOf(false) }
+    var showNotificationScreen by remember { mutableStateOf(false) }
     var selectedCategoryScreen by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -53,6 +55,8 @@ fun BuyerDashboardScreen() {
                 onTabSelected = { tabIndex ->
                     selectedTab = tabIndex
                     showSearchScreen = false
+                    showWishlistScreen = false
+                    showNotificationScreen = false
                     selectedCategoryScreen = null
                 }
             )
@@ -74,6 +78,22 @@ fun BuyerDashboardScreen() {
                 .padding(innerPadding)
         ) {
             when {
+                showWishlistScreen -> {
+                    BuyerWishlistScreen(
+                        onBackClick = {
+                            showWishlistScreen = false
+                        }
+                    )
+                }
+
+                showNotificationScreen -> {
+                    BuyerNotificationScreen(
+                        onBackClick = {
+                            showNotificationScreen = false
+                        }
+                    )
+                }
+
                 showSearchScreen -> {
                     BuyerSearchScreen(
                         onBackClick = {
@@ -97,18 +117,39 @@ fun BuyerDashboardScreen() {
                             BuyerHomeScreen(
                                 onSearchClick = {
                                     showSearchScreen = true
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
                                 },
                                 onCategoryClick = { categoryName ->
                                     selectedCategoryScreen = categoryName
+                                    showSearchScreen = false
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
                                 },
                                 onProfileClick = {
                                     selectedTab = 4
                                     showSearchScreen = false
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
                                     selectedCategoryScreen = null
                                 },
                                 onCategoriesSeeAllClick = {
                                     selectedTab = 2
                                     showSearchScreen = false
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
+                                    selectedCategoryScreen = null
+                                },
+                                onWishlistClick = {
+                                    showWishlistScreen = true
+                                    showSearchScreen = false
+                                    showNotificationScreen = false
+                                    selectedCategoryScreen = null
+                                },
+                                onNotificationClick = {
+                                    showNotificationScreen = true
+                                    showSearchScreen = false
+                                    showWishlistScreen = false
                                     selectedCategoryScreen = null
                                 }
                             )
@@ -131,6 +172,8 @@ fun BuyerDashboardScreen() {
                                 onOrdersClick = {
                                     selectedTab = 3
                                     showSearchScreen = false
+                                    showWishlistScreen = false
+                                    showNotificationScreen = false
                                     selectedCategoryScreen = null
                                 }
                             )
