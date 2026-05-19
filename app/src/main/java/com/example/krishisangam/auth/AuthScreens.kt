@@ -212,14 +212,14 @@ private fun AuthHeroTitle(
 
 @Composable
 private fun MiniTrustBadge() {
-        Text(
-            text = "🌾 Verified farmer-to-buyer network",
-            color = Color.White.copy(alpha = 0.78f),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center
-        )
-    }
+    Text(
+        text = "🌾 Verified farmer-to-buyer network",
+        color = Color.White.copy(alpha = 0.78f),
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold,
+        textAlign = TextAlign.Center
+    )
+}
 
 @Composable
 private fun GlassPanel(
@@ -369,13 +369,14 @@ fun AuthMessage(viewModel: AuthViewModel) {
 fun RoleSelectionScreen(
     onBuyerClick: () -> Unit,
     onFarmerClick: () -> Unit,
-    onManagerClick: () -> Unit
+    onManagerClick: () -> Unit,
+    onTransportClick: () -> Unit
 ) {
     var selectedRole by remember { mutableStateOf<String?>(null) }
 
     AuthBackground(
-        headerTopPadding = 70,
-        spaceAfterHeader = 115
+        headerTopPadding = 50,
+        spaceAfterHeader = 70
     ) {
         AuthHeroTitle(
             title = "Empowering Farmers.",
@@ -383,11 +384,11 @@ fun RoleSelectionScreen(
             subtitle = ""
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         MiniTrustBadge()
 
-        Spacer(modifier = Modifier.height(46.dp))
+        Spacer(modifier = Modifier.height(34.dp))
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -429,6 +430,18 @@ fun RoleSelectionScreen(
                 onClick = {
                     selectedRole = "manager"
                     onManagerClick()
+                }
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            RoleCardWide(
+                title = "Transport Partner",
+                emoji = "🚚",
+                selected = selectedRole == "transport",
+                onClick = {
+                    selectedRole = "transport"
+                    onTransportClick()
                 }
             )
         }

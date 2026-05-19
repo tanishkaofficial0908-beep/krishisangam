@@ -1,6 +1,5 @@
 package com.example.krishisangam.auth
 
-import com.example.krishisangam.farmer.FarmerDashboardScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -13,7 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.krishisangam.buyer.BuyerDashboardScreen
+import com.example.krishisangam.farmer.FarmerDashboardScreen
 import com.example.krishisangam.manager.ManagerDashboardScreen
+import com.example.krishisangam.transportation.TransportationDashboardScreen
 
 object AuthRoutes {
     const val ROLE = "role"
@@ -25,6 +26,7 @@ object AuthRoutes {
     const val FARMER_HOME = "farmer_home"
     const val BUYER_HOME = "buyer_home"
     const val MANAGER_HOME = "manager_home"
+    const val TRANSPORT_HOME = "transport_home"
 }
 
 @Composable
@@ -49,6 +51,11 @@ fun AuthNavGraph() {
                 onManagerClick = {
                     authViewModel.selectRole(UserRole.NODE_MANAGER)
                     navController.navigate(AuthRoutes.LOGIN)
+                },
+                onTransportClick = {
+                    navController.navigate(AuthRoutes.TRANSPORT_HOME) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -117,14 +124,16 @@ fun AuthNavGraph() {
             BuyerDashboardScreen()
         }
 
-
         composable(AuthRoutes.FARMER_HOME) {
             FarmerDashboardScreen()
-
         }
 
         composable(AuthRoutes.MANAGER_HOME) {
             ManagerDashboardScreen()
+        }
+
+        composable(AuthRoutes.TRANSPORT_HOME) {
+            TransportationDashboardScreen()
         }
     }
 }
