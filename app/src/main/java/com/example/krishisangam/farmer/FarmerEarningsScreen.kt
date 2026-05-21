@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.krishisangam.R
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
+import kotlin.math.roundToInt
 
 private val PrimaryGreen = Color(0xFF01AC66)
 private val BackgroundColor = Color(0xFF003D22)
@@ -54,10 +62,14 @@ private val DialogGreen = Color(0xFF123D2B)
 private val DialogText = Color(0xFFD8EDE3)
 private val SoftYellow = Color(0xFFFFC107).copy(alpha = 0.16f)
 private val SoftGreen = Color(0xFF01AC66).copy(alpha = 0.16f)
+private val SoftRed = Color(0xFFFF6B6B).copy(alpha = 0.16f)
+private val RedText = Color(0xFFFF6B6B)
 private val DividerGlass = Color.White.copy(alpha = 0.14f)
 
 private const val PAYMENT_STATUS_COMPLETED = "completed"
 private const val PAYMENT_STATUS_PENDING_RELEASE = "pending_release"
+private const val PAYMENT_STATUS_FAILED = "failed"
+private const val PAYMENT_STATUS_PENDING = "pending"
 
 data class FarmerPayment(
     val orderId: String,
@@ -70,6 +82,15 @@ data class FarmerPayment(
     val date: String
 )
 
+private data class FarmerEarningsState(
+    val isLoading: Boolean = true,
+    val totalEarned: String = "₹6,060",
+    val pendingRelease: String = "₹1,600",
+    val completedOrders: Int = 2,
+    val trustScore: Int = 70,
+    val payments: List<FarmerPayment> = emptyList()
+)
+
 @Composable
 fun FarmerEarningsScreen() {
     var selectedPayment by remember {
@@ -80,7 +101,7 @@ fun FarmerEarningsScreen() {
         mutableStateOf(false)
     }
 
-    val payments = listOf(
+    val dummyPayments = listOf(
         FarmerPayment(
             orderId = "#KS1021",
             productName = stringResource(R.string.sharbati_wheat),
@@ -113,10 +134,179 @@ fun FarmerEarningsScreen() {
         )
     )
 
-    val totalEarned = "₹6,060"
-    val pendingRelease = "₹1,600"
-    val completedOrders = 2
-    val trustScore = 70
+    var earningsState by remember {
+        mutableStateOf(
+            FarmerEarningsState(
+                isLoading = true,
+                totalEarned = "₹6,060",
+                pendingRelease = "₹1,600",
+                completedOrders = 2,
+                trustScore = 70,
+                payments = dummyPayments
+            )
+        )
+    }
+
+    val farmerId = FirebaseAuth.getInstance().currentUser?.uid
+    val firestore = remember {
+        FirebaseFirestore.getInstance()
+    }
+
+    DisposableEffect(farmerId) {
+        if (farmerId.isNullOrBlank()) {
+            earningsState = FarmerEarningsState(
+                isLoading = false,
+                totalEarned = "₹6,060",
+                pendingRelease = "₹1,600",
+                completedOrders = 2,
+                trustScore = 70,
+                payments = dummyPayments
+            )
+
+            return@DisposableEffect onDispose { }
+        }
+
+        val listener = firestore
+            .collection("orders")
+            .whereEqualTo("farmerId", farmerId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) {
+                    earningsState = FarmerEarningsState(
+                        isLoading = false,
+                        totalEarned = "₹6,060",
+                        pendingRelease = "₹1,600",
+                        completedOrders = 2,
+                        trustScore = 70,
+                        payments = dummyPayments
+                    )
+                    return@addSnapshotListener
+                }
+
+                val orderDocuments = snapshot.documents
+
+                if (orderDocuments.isEmpty()) {
+                    earningsState = FarmerEarningsState(
+                        isLoading = false,
+                        totalEarned = "₹6,060",
+                        pendingRelease = "₹1,600",
+                        completedOrders = 2,
+                        trustScore = 70,
+                        payments = dummyPayments
+                    )
+                    return@addSnapshotListener
+                }
+
+                var totalEarnedAmount = 0.0
+                var pendingReleaseAmount = 0.0
+                var completedOrderCount = 0
+
+                val realPayments = orderDocuments.map { document ->
+                    val paymentStatus = document.getString("paymentStatus") ?: PAYMENT_STATUS_PENDING
+                    val orderStatus = document.getString("orderStatus") ?: ""
+
+                    val farmerAdvanceAmount = document.getDoubleValueSafely(
+                        keys = listOf(
+                            "farmerAdvanceAmount",
+                            "advanceAmountPaidByBuyer",
+                            "advanceAmount",
+                            "firstHalf"
+                        )
+                    )
+
+                    val farmerRemainingAmount = document.getDoubleValueSafely(
+                        keys = listOf(
+                            "farmerRemainingAmount",
+                            "remainingAmountFromBuyer",
+                            "remainingAmount",
+                            "secondHalf"
+                        )
+                    )
+
+                    val totalAmount = document.getDoubleValueSafely(
+                        keys = listOf(
+                            "totalAmount",
+                            "orderTotal",
+                            "subtotal"
+                        )
+                    ).let { parsedTotal ->
+                        if (parsedTotal > 0.0) {
+                            parsedTotal
+                        } else {
+                            farmerAdvanceAmount + farmerRemainingAmount
+                        }
+                    }
+
+                    if (
+                        paymentStatus.equals("advance_paid", ignoreCase = true) ||
+                        paymentStatus.equals("fully_paid", ignoreCase = true)
+                    ) {
+                        totalEarnedAmount += farmerAdvanceAmount
+                    }
+
+                    if (paymentStatus.equals("fully_paid", ignoreCase = true)) {
+                        totalEarnedAmount += farmerRemainingAmount
+                    }
+
+                    if (paymentStatus.equals("advance_paid", ignoreCase = true)) {
+                        pendingReleaseAmount += farmerRemainingAmount
+                    }
+
+                    if (
+                        orderStatus.equals("delivered", ignoreCase = true) ||
+                        paymentStatus.equals("fully_paid", ignoreCase = true)
+                    ) {
+                        completedOrderCount += 1
+                    }
+
+                    FarmerPayment(
+                        orderId = document.getOrderIdText(),
+                        productName = document.getString("productName")
+                            ?: document.getString("name")
+                            ?: "Product",
+                        buyerName = document.getString("buyerName")
+                            ?: "Buyer",
+                        totalAmount = "₹${totalAmount.roundToInt()}",
+                        firstHalf = "₹${farmerAdvanceAmount.roundToInt()}",
+                        secondHalf = "₹${farmerRemainingAmount.roundToInt()}",
+                        statusKey = paymentStatus.toFarmerPaymentStatusKey(),
+                        date = document.getReadableDate()
+                    )
+                }.sortedByDescending { payment ->
+                    payment.date
+                }
+
+                earningsState = FarmerEarningsState(
+                    isLoading = false,
+                    totalEarned = "₹${totalEarnedAmount.roundToInt()}",
+                    pendingRelease = "₹${pendingReleaseAmount.roundToInt()}",
+                    completedOrders = completedOrderCount,
+                    trustScore = 70,
+                    payments = realPayments
+                )
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
+    val payments = earningsState.payments
+    val totalEarned = if (earningsState.isLoading) {
+        "..."
+    } else {
+        earningsState.totalEarned
+    }
+    val pendingRelease = if (earningsState.isLoading) {
+        "..."
+    } else {
+        earningsState.pendingRelease
+    }
+    val completedOrders = if (earningsState.isLoading) {
+        0
+    } else {
+        earningsState.completedOrders
+    }
+    val trustScore = earningsState.trustScore
 
     if (selectedPayment != null) {
         PaymentDetailDialog(
@@ -589,24 +779,25 @@ fun PaymentInfoColumn(
 fun StatusBadge(
     statusKey: String
 ) {
-    val isCompleted = statusKey == PAYMENT_STATUS_COMPLETED
-
-    val bgColor = if (isCompleted) {
-        SoftGreen
-    } else {
-        SoftYellow
+    val bgColor = when (statusKey) {
+        PAYMENT_STATUS_COMPLETED -> SoftGreen
+        PAYMENT_STATUS_PENDING_RELEASE -> SoftYellow
+        PAYMENT_STATUS_FAILED -> SoftRed
+        else -> Color.White.copy(alpha = 0.10f)
     }
 
-    val textColor = if (isCompleted) {
-        PrimaryGreen
-    } else {
-        AccentYellow
+    val textColor = when (statusKey) {
+        PAYMENT_STATUS_COMPLETED -> PrimaryGreen
+        PAYMENT_STATUS_PENDING_RELEASE -> AccentYellow
+        PAYMENT_STATUS_FAILED -> RedText
+        else -> TextMuted
     }
 
-    val statusText = if (isCompleted) {
-        stringResource(R.string.completed)
-    } else {
-        stringResource(R.string.pending_release)
+    val statusText = when (statusKey) {
+        PAYMENT_STATUS_COMPLETED -> stringResource(R.string.completed)
+        PAYMENT_STATUS_PENDING_RELEASE -> "1st Half Completed"
+        PAYMENT_STATUS_FAILED -> "Failed"
+        else -> "Pending"
     }
 
     Box(
@@ -822,15 +1013,17 @@ fun PaymentDetailDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = if (payment.statusKey == PAYMENT_STATUS_COMPLETED) {
-                        stringResource(R.string.completed)
-                    } else {
-                        stringResource(R.string.pending_release)
+                    text = when (payment.statusKey) {
+                        PAYMENT_STATUS_COMPLETED -> stringResource(R.string.completed)
+                        PAYMENT_STATUS_PENDING_RELEASE -> "1st Half Completed"
+                        PAYMENT_STATUS_FAILED -> "Failed"
+                        else -> "Pending"
                     },
-                    color = if (payment.statusKey == PAYMENT_STATUS_COMPLETED) {
-                        PrimaryGreen
-                    } else {
-                        AccentYellow
+                    color = when (payment.statusKey) {
+                        PAYMENT_STATUS_COMPLETED -> PrimaryGreen
+                        PAYMENT_STATUS_PENDING_RELEASE -> AccentYellow
+                        PAYMENT_STATUS_FAILED -> RedText
+                        else -> TextMuted
                     },
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 14.sp
@@ -838,4 +1031,89 @@ fun PaymentDetailDialog(
             }
         }
     )
+}
+
+private fun DocumentSnapshot.getOrderIdText(): String {
+    val orderId = getString("orderId") ?: id.takeLast(6).uppercase()
+
+    return if (orderId.startsWith("#")) {
+        orderId
+    } else {
+        "#$orderId"
+    }
+}
+
+private fun DocumentSnapshot.getReadableDate(): String {
+    val rawCreatedAt = get("createdAt")
+
+    return when (rawCreatedAt) {
+        is Timestamp -> {
+            try {
+                val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                formatter.format(rawCreatedAt.toDate())
+            } catch (exception: Exception) {
+                "Today"
+            }
+        }
+
+        is Number -> {
+            try {
+                val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                formatter.format(rawCreatedAt.toLong())
+            } catch (exception: Exception) {
+                "Today"
+            }
+        }
+
+        is String -> {
+            rawCreatedAt.ifBlank {
+                "Today"
+            }
+        }
+
+        else -> "Today"
+    }
+}
+
+private fun DocumentSnapshot.getDoubleValueSafely(
+    keys: List<String>
+): Double {
+    keys.forEach { key ->
+        val value = get(key)
+
+        when (value) {
+            is Number -> return value.toDouble()
+
+            is String -> {
+                val cleanedValue = value
+                    .replace("₹", "")
+                    .replace("/Kg", "")
+                    .replace("/kg", "")
+                    .replace("Kg", "")
+                    .replace("kg", "")
+                    .replace(",", "")
+                    .trim()
+
+                cleanedValue.toDoubleOrNull()?.let {
+                    return it
+                }
+            }
+        }
+    }
+
+    return 0.0
+}
+
+private fun String.toFarmerPaymentStatusKey(): String {
+    return when {
+        equals("fully_paid", ignoreCase = true) -> PAYMENT_STATUS_COMPLETED
+        equals("completed", ignoreCase = true) -> PAYMENT_STATUS_COMPLETED
+
+        equals("advance_paid", ignoreCase = true) -> PAYMENT_STATUS_PENDING_RELEASE
+        equals("pending_release", ignoreCase = true) -> PAYMENT_STATUS_PENDING_RELEASE
+
+        equals("failed", ignoreCase = true) -> PAYMENT_STATUS_FAILED
+
+        else -> PAYMENT_STATUS_PENDING
+    }
 }

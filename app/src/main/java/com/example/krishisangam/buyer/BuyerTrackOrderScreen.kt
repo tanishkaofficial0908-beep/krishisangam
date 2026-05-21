@@ -23,6 +23,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 
 private val TrackPrimaryGreen = Color(0xFF01AC66)
 private val TrackBackground = Color(0xFF003D22)
@@ -42,11 +49,76 @@ private val TrackTextMuted = Color(0xFFB9D8C7)
 private val TrackGlassCard = Color.White.copy(alpha = 0.105f)
 private val TrackBorderGlass = Color.White.copy(alpha = 0.16f)
 
+data class BuyerTrackingState(
+    val orderStatus: String = "order_placed",
+    val paymentStatus: String = "advance_paid",
+    val trackingStep: Int = 0,
+    val nodeVerificationDone: Boolean = false,
+    val qualityCheckDone: Boolean = false,
+    val packagingDone: Boolean = false,
+    val dispatchPlanningDone: Boolean = false,
+    val outForDeliveryDone: Boolean = false,
+    val deliveredDone: Boolean = false
+)
+
 @Composable
 fun BuyerTrackOrderScreen(
     order: BuyerConfirmedOrder,
     onBackClick: () -> Unit
 ) {
+    var trackingState by remember {
+        mutableStateOf(
+            BuyerTrackingState(
+                orderStatus = order.orderStatus,
+                paymentStatus = order.paymentStatus,
+                trackingStep = buyerOrderStatusToStep(order.orderStatus)
+            )
+        )
+    }
+
+    val firestore = remember {
+        FirebaseFirestore.getInstance()
+    }
+
+    DisposableEffect(order.orderId) {
+        val cleanOrderId = order.orderId.removePrefix("#")
+
+        val listener = firestore
+            .collection("orders")
+            .whereEqualTo("orderId", order.orderId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || snapshot.documents.isEmpty()) {
+                    firestore
+                        .collection("orders")
+                        .whereEqualTo("orderId", cleanOrderId)
+                        .get()
+                        .addOnSuccessListener { fallbackSnapshot ->
+                            val document = fallbackSnapshot.documents.firstOrNull()
+
+                            if (document != null) {
+                                trackingState = document.toBuyerTrackingState(
+                                    fallbackOrderStatus = order.orderStatus,
+                                    fallbackPaymentStatus = order.paymentStatus
+                                )
+                            }
+                        }
+
+                    return@addSnapshotListener
+                }
+
+                val document = snapshot.documents.first()
+
+                trackingState = document.toBuyerTrackingState(
+                    fallbackOrderStatus = order.orderStatus,
+                    fallbackPaymentStatus = order.paymentStatus
+                )
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +149,10 @@ fun BuyerTrackOrderScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackTimelineCard(order = order)
+            TrackTimelineCard(
+                order = order,
+                trackingState = trackingState
+            )
         }
     }
 }
@@ -255,7 +330,8 @@ fun TrackAmountRow(
 
 @Composable
 fun TrackTimelineCard(
-    order: BuyerConfirmedOrder
+    order: BuyerConfirmedOrder,
+    trackingState: BuyerTrackingState
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -283,56 +359,66 @@ fun TrackTimelineCard(
             TrackStepRow(
                 title = "Order Placed",
                 subtitle = "50% advance payment received.",
-                isCompleted = isStepCompleted(order.orderStatus, "order_placed"),
+                isCompleted = true,
                 updatedBy = "Updated automatically after payment"
             )
 
             TrackStepRow(
                 title = "Agro Node Verification",
-                subtitle = "Agro Node manager will verify product availability.",
-                isCompleted = isStepCompleted(order.orderStatus, "agro_node_verified"),
+                subtitle = "Agro Node manager verified product availability.",
+                isCompleted = trackingState.nodeVerificationDone || trackingState.trackingStep >= 1,
                 updatedBy = "Updated by Agro Node Manager"
             )
 
             TrackStepRow(
-                title = "Quality Check & Packaging",
-                subtitle = "Quality, quantity and basic packaging will be completed.",
-                isCompleted = isStepCompleted(order.orderStatus, "quality_checked"),
+                title = "Quality Check",
+                subtitle = "Quality and quantity check completed.",
+                isCompleted = trackingState.qualityCheckDone || trackingState.trackingStep >= 2,
+                updatedBy = "Updated by Agro Node Manager"
+            )
+
+            TrackStepRow(
+                title = "Packaging",
+                subtitle = "Basic packaging completed at Agro Node.",
+                isCompleted = trackingState.packagingDone || trackingState.trackingStep >= 3,
                 updatedBy = "Updated by Agro Node Manager"
             )
 
             TrackStepRow(
                 title = "Dispatch Planning",
-                subtitle = "Truck capacity and delivery route will be planned.",
-                isCompleted = isStepCompleted(order.orderStatus, "dispatch_planned"),
+                subtitle = "Truck capacity and delivery route planned.",
+                isCompleted = trackingState.dispatchPlanningDone || trackingState.trackingStep >= 4,
                 updatedBy = "Updated by Agro Node Manager"
             )
 
             TrackStepRow(
                 title = "Out for Delivery",
                 subtitle = "Delivery partner has started the delivery.",
-                isCompleted = isStepCompleted(order.orderStatus, "out_for_delivery"),
+                isCompleted = trackingState.outForDeliveryDone || trackingState.trackingStep >= 5,
                 updatedBy = "Updated by Delivery Partner"
             )
 
             TrackStepRow(
                 title = "Delivered",
                 subtitle = "Order delivered to buyer location.",
-                isCompleted = isStepCompleted(order.orderStatus, "delivered"),
+                isCompleted = trackingState.deliveredDone || trackingState.trackingStep >= 6,
                 updatedBy = "Updated by Delivery Partner"
             )
 
             TrackStepRow(
                 title = "Remaining Payment Pending",
                 subtitle = "Buyer will pay remaining 50% after delivery.",
-                isCompleted = order.paymentStatus == "fully_paid",
+                isCompleted = trackingState.paymentStatus == "fully_paid",
                 updatedBy = "Updated after buyer pays remaining amount"
             )
 
             TrackStepRow(
                 title = "Completed",
                 subtitle = "Order and payment completed.",
-                isCompleted = order.orderStatus == "completed" && order.paymentStatus == "fully_paid",
+                isCompleted = (
+                        trackingState.orderStatus == "completed" ||
+                                trackingState.orderStatus == "delivered"
+                        ) && trackingState.paymentStatus == "fully_paid",
                 updatedBy = "Updated automatically after final payment"
             )
         }
@@ -418,22 +504,37 @@ fun TrackStepRow(
     }
 }
 
-fun isStepCompleted(
-    currentStatus: String,
-    stepStatus: String
-): Boolean {
-    val statusOrder = listOf(
-        "order_placed",
-        "agro_node_verified",
-        "quality_checked",
-        "dispatch_planned",
-        "out_for_delivery",
-        "delivered",
-        "completed"
+private fun DocumentSnapshot.toBuyerTrackingState(
+    fallbackOrderStatus: String,
+    fallbackPaymentStatus: String
+): BuyerTrackingState {
+    val orderStatus = getString("orderStatus") ?: fallbackOrderStatus
+    val trackingStep = getLong("trackingStep")?.toInt() ?: buyerOrderStatusToStep(orderStatus)
+
+    return BuyerTrackingState(
+        orderStatus = orderStatus,
+        paymentStatus = getString("paymentStatus") ?: fallbackPaymentStatus,
+        trackingStep = trackingStep,
+        nodeVerificationDone = getBoolean("nodeVerificationDone") ?: (trackingStep >= 1),
+        qualityCheckDone = getBoolean("qualityCheckDone") ?: (trackingStep >= 2),
+        packagingDone = getBoolean("packagingDone") ?: (trackingStep >= 3),
+        dispatchPlanningDone = getBoolean("dispatchPlanningDone") ?: (trackingStep >= 4),
+        outForDeliveryDone = getBoolean("outForDeliveryDone") ?: (trackingStep >= 5),
+        deliveredDone = getBoolean("deliveredDone") ?: (trackingStep >= 6)
     )
+}
 
-    val currentIndex = statusOrder.indexOf(currentStatus)
-    val stepIndex = statusOrder.indexOf(stepStatus)
-
-    return currentIndex >= stepIndex && currentIndex != -1 && stepIndex != -1
+private fun buyerOrderStatusToStep(
+    orderStatus: String
+): Int {
+    return when {
+        orderStatus.equals("agro_node_verified", ignoreCase = true) -> 1
+        orderStatus.equals("quality_checked", ignoreCase = true) -> 2
+        orderStatus.equals("packaging", ignoreCase = true) -> 3
+        orderStatus.equals("dispatch_planned", ignoreCase = true) -> 4
+        orderStatus.equals("out_for_delivery", ignoreCase = true) -> 5
+        orderStatus.equals("delivered", ignoreCase = true) -> 6
+        orderStatus.equals("completed", ignoreCase = true) -> 6
+        else -> 0
+    }
 }

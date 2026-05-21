@@ -1,3 +1,4 @@
+// ManagerHomeScreen.kt
 package com.example.krishisangam.manager
 
 import androidx.compose.foundation.BorderStroke
@@ -68,7 +69,11 @@ fun ManagerHomeScreen(
     onSpecificOrderClick: (String) -> Unit,
     onPaymentsClick: () -> Unit,
     onFarmersClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    pendingVerification: Int = 0,
+    approvedProducts: Int = 0,
+    activeOrders: Int = 0,
+    totalRevenue: Int = 0,
 ) {
     var selectedInfo by remember {
         mutableStateOf<ManagerHomeInfo?>(null)
@@ -162,7 +167,7 @@ fun ManagerHomeScreen(
             ) {
                 ManagerStatCard(
                     title = "Pending Verification",
-                    value = "9",
+                    value = pendingVerification.toString(),
                     subtitle = "Awaiting review",
                     icon = "⏳",
                     modifier = Modifier.weight(1f),
@@ -173,7 +178,7 @@ fun ManagerHomeScreen(
 
                 ManagerStatCard(
                     title = "Approved Products",
-                    value = "11",
+                    value = approvedProducts.toString(),
                     subtitle = "Live listings",
                     icon = "✅",
                     modifier = Modifier.weight(1f),
@@ -191,7 +196,7 @@ fun ManagerHomeScreen(
             ) {
                 ManagerStatCard(
                     title = "Active Orders",
-                    value = "4",
+                    value = activeOrders.toString(),
                     subtitle = "Ready to process",
                     icon = "📦",
                     modifier = Modifier.weight(1f),
@@ -202,7 +207,7 @@ fun ManagerHomeScreen(
 
                 ManagerStatCard(
                     title = "Total Revenue",
-                    value = "₹8,200",
+                    value = "₹$totalRevenue",
                     subtitle = "Today",
                     icon = "📈",
                     modifier = Modifier.weight(1f),

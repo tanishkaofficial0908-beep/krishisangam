@@ -25,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
+import kotlin.math.roundToInt
 
 private val PrimaryGreen = Color(0xFF01AC66)
 private val BackgroundColor = Color(0xFF003D22)
@@ -58,12 +65,12 @@ private val BlueText = Color(0xFF7FB2FF)
 private val DividerGlass = Color.White.copy(alpha = 0.14f)
 
 private const val MANAGER_ORDER_FILTER_ALL = "All"
-private const val MANAGER_ORDER_STATUS_PENDING = "Pending"
 private const val MANAGER_ORDER_STATUS_READY = "Ready"
 private const val MANAGER_ORDER_STATUS_TRANSIT = "In Transit"
 private const val MANAGER_ORDER_STATUS_DELIVERED = "Delivered"
 
 data class ManagerOrderItem(
+    val documentId: String,
     val orderId: String,
     val buyerName: String,
     val farmerName: String,
@@ -72,6 +79,14 @@ data class ManagerOrderItem(
     val quantity: String,
     val amount: String,
     val status: String,
+    val orderStatus: String,
+    val trackingStep: Int,
+    val nodeVerificationDone: Boolean,
+    val qualityCheckDone: Boolean,
+    val packagingDone: Boolean,
+    val dispatchPlanningDone: Boolean,
+    val outForDeliveryDone: Boolean,
+    val deliveredDone: Boolean,
     val pickupNode: String,
     val dropPoint: String,
     val orderDate: String
@@ -89,77 +104,74 @@ fun ManagerOrdersScreen(
         mutableStateOf<ManagerOrderItem?>(null)
     }
 
-    val orders = listOf(
-        ManagerOrderItem(
-            orderId = "#KS1234",
-            buyerName = "Amit Buyer",
-            farmerName = "Ramesh Patel",
-            productName = "Wheat",
-            productEmoji = "🌾",
-            quantity = "2 Quintal",
-            amount = "₹4,300",
-            status = MANAGER_ORDER_STATUS_READY,
-            pickupNode = "Bhopal Agro Node 01",
-            dropPoint = "Bhopal Drop Point",
-            orderDate = "Today"
-        ),
-        ManagerOrderItem(
-            orderId = "#KS1235",
-            buyerName = "Neha Buyer",
-            farmerName = "Shreya Gupta",
-            productName = "Rice",
-            productEmoji = "🍚",
-            quantity = "2 Quintal",
-            amount = "₹6,400",
-            status = MANAGER_ORDER_STATUS_DELIVERED,
-            pickupNode = "Bhopal Agro Node 01",
-            dropPoint = "Sehore Community Hub",
-            orderDate = "Yesterday"
-        ),
-        ManagerOrderItem(
-            orderId = "#KS1236",
-            buyerName = "Rahul Buyer",
-            farmerName = "Mahesh Sahu",
-            productName = "Tomato",
-            productEmoji = "🍅",
-            quantity = "80 kg",
-            amount = "₹2,400",
-            status = MANAGER_ORDER_STATUS_TRANSIT,
-            pickupNode = "Bhopal Agro Node 01",
-            dropPoint = "Raisen Drop Point",
-            orderDate = "10 May"
-        ),
-        ManagerOrderItem(
-            orderId = "#KS1237",
-            buyerName = "Suman Buyer",
-            farmerName = "Ramesh Patel",
-            productName = "Capsicum",
-            productEmoji = "🫑",
-            quantity = "120 kg",
-            amount = "₹4,200",
-            status = MANAGER_ORDER_STATUS_PENDING,
-            pickupNode = "Bhopal Agro Node 01",
-            dropPoint = "Bhopal Market Hub",
-            orderDate = "9 May"
-        )
-    )
+    var orders by remember {
+        mutableStateOf<List<ManagerOrderItem>>(emptyList())
+    }
 
-    LaunchedEffect(openOrderId) {
-        if (openOrderId != null) {
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+
+    var errorMessage by remember {
+        mutableStateOf("")
+    }
+
+    val firestore = remember {
+        FirebaseFirestore.getInstance()
+    }
+
+    DisposableEffect(Unit) {
+        val listener = firestore
+            .collection("orders")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) {
+                    isLoading = false
+                    errorMessage = error?.message ?: "Unable to load orders."
+                    orders = emptyList()
+                    return@addSnapshotListener
+                }
+
+                orders = snapshot.documents.map { document ->
+                    document.toManagerOrderItem()
+                }
+
+                selectedOrder = selectedOrder?.let { selected ->
+                    orders.firstOrNull { it.documentId == selected.documentId }
+                }
+
+                isLoading = false
+                errorMessage = ""
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
+    LaunchedEffect(openOrderId, orders) {
+        if (!openOrderId.isNullOrBlank() && orders.isNotEmpty()) {
             selectedOrder = orders.firstOrNull { order ->
-                order.orderId == openOrderId
+                order.orderId == openOrderId || order.documentId == openOrderId
             }
 
             selectedFilter = MANAGER_ORDER_FILTER_ALL
         }
     }
 
-    val visibleOrders = if (selectedFilter == MANAGER_ORDER_FILTER_ALL) {
-        orders
-    } else {
-        orders.filter { order ->
-            order.status == selectedFilter
+    val visibleOrders = when (selectedFilter) {
+        MANAGER_ORDER_STATUS_READY -> {
+            orders.filter { it.status == MANAGER_ORDER_STATUS_READY }
         }
+
+        MANAGER_ORDER_STATUS_TRANSIT -> {
+            orders.filter { it.status == MANAGER_ORDER_STATUS_TRANSIT }
+        }
+
+        MANAGER_ORDER_STATUS_DELIVERED -> {
+            orders.filter { it.status == MANAGER_ORDER_STATUS_DELIVERED }
+        }
+
+        else -> orders
     }
 
     if (selectedOrder != null) {
@@ -167,6 +179,13 @@ fun ManagerOrdersScreen(
             order = selectedOrder!!,
             onDismiss = {
                 selectedOrder = null
+            },
+            onUpdateTrackingStep = { documentId, step ->
+                updateOrderTrackingStep(
+                    firestore = firestore,
+                    documentId = documentId,
+                    step = step
+                )
             }
         )
     }
@@ -240,7 +259,11 @@ fun ManagerOrdersScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "${visibleOrders.size} orders",
+                text = when {
+                    isLoading -> "Loading orders..."
+                    errorMessage.isNotBlank() -> errorMessage
+                    else -> "${visibleOrders.size} orders"
+                },
                 fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = AccentYellow
@@ -248,7 +271,7 @@ fun ManagerOrdersScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            if (visibleOrders.isEmpty()) {
+            if (!isLoading && visibleOrders.isEmpty()) {
                 EmptyManagerOrdersState(
                     selectedFilter = selectedFilter
                 )
@@ -260,7 +283,7 @@ fun ManagerOrdersScreen(
                     items(
                         items = visibleOrders,
                         key = { order ->
-                            order.orderId
+                            order.documentId
                         }
                     ) { order ->
                         ManagerOrderCard(
@@ -716,7 +739,8 @@ fun EmptyManagerOrdersState(
 @Composable
 fun ManagerOrderDetailDialog(
     order: ManagerOrderItem,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onUpdateTrackingStep: (String, Int) -> Unit
 ) {
     AlertDialog(
         onDismissRequest = {
@@ -829,7 +853,320 @@ fun ManagerOrderDetailDialog(
                     color = DialogText,
                     fontSize = 14.sp
                 )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = "Update Tracking",
+                    color = TextLight,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ManagerTrackingActionButton(
+                    title = "✓ Agro Node Verified",
+                    enabled = !order.nodeVerificationDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 1)
+                    }
+                )
+
+                ManagerTrackingActionButton(
+                    title = "✓ Quality Checked",
+                    enabled = order.nodeVerificationDone && !order.qualityCheckDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 2)
+                    }
+                )
+
+                ManagerTrackingActionButton(
+                    title = "✓ Packaged",
+                    enabled = order.qualityCheckDone && !order.packagingDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 3)
+                    }
+                )
+
+                ManagerTrackingActionButton(
+                    title = "✓ Dispatch Planned",
+                    enabled = order.packagingDone && !order.dispatchPlanningDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 4)
+                    }
+                )
+
+                ManagerTrackingActionButton(
+                    title = "✓ Out For Delivery",
+                    enabled = order.dispatchPlanningDone && !order.outForDeliveryDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 5)
+                    }
+                )
+
+                ManagerTrackingActionButton(
+                    title = "✓ Delivered",
+                    enabled = order.outForDeliveryDone && !order.deliveredDone,
+                    onClick = {
+                        onUpdateTrackingStep(order.documentId, 6)
+                    }
+                )
             }
         }
     )
+}
+
+@Composable
+private fun ManagerTrackingActionButton(
+    title: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                if (enabled) {
+                    PrimaryGreen.copy(alpha = 0.28f)
+                } else {
+                    Color.White.copy(alpha = 0.08f)
+                }
+            )
+            .border(
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (enabled) {
+                        PrimaryGreen.copy(alpha = 0.45f)
+                    } else {
+                        BorderGlass
+                    }
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .clickable(enabled = enabled) {
+                onClick()
+            }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = title,
+            color = if (enabled) TextLight else TextMuted,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
+
+private fun updateOrderTrackingStep(
+    firestore: FirebaseFirestore,
+    documentId: String,
+    step: Int
+) {
+    val updateMap = when (step) {
+        1 -> mapOf(
+            "orderStatus" to "agro_node_verified",
+            "trackingStep" to 1,
+            "nodeVerificationDone" to true
+        )
+
+        2 -> mapOf(
+            "orderStatus" to "quality_checked",
+            "trackingStep" to 2,
+            "nodeVerificationDone" to true,
+            "qualityCheckDone" to true
+        )
+
+        3 -> mapOf(
+            "orderStatus" to "packaging",
+            "trackingStep" to 3,
+            "nodeVerificationDone" to true,
+            "qualityCheckDone" to true,
+            "packagingDone" to true
+        )
+
+        4 -> mapOf(
+            "orderStatus" to "dispatch_planned",
+            "trackingStep" to 4,
+            "nodeVerificationDone" to true,
+            "qualityCheckDone" to true,
+            "packagingDone" to true,
+            "dispatchPlanningDone" to true
+        )
+
+        5 -> mapOf(
+            "orderStatus" to "out_for_delivery",
+            "trackingStep" to 5,
+            "nodeVerificationDone" to true,
+            "qualityCheckDone" to true,
+            "packagingDone" to true,
+            "dispatchPlanningDone" to true,
+            "outForDeliveryDone" to true
+        )
+
+        6 -> mapOf(
+            "orderStatus" to "delivered",
+            "trackingStep" to 6,
+            "nodeVerificationDone" to true,
+            "qualityCheckDone" to true,
+            "packagingDone" to true,
+            "dispatchPlanningDone" to true,
+            "outForDeliveryDone" to true,
+            "deliveredDone" to true
+        )
+
+        else -> emptyMap()
+    }
+
+    if (updateMap.isNotEmpty()) {
+        firestore
+            .collection("orders")
+            .document(documentId)
+            .update(updateMap)
+    }
+}
+
+private fun DocumentSnapshot.toManagerOrderItem(): ManagerOrderItem {
+    val orderStatus = getString("orderStatus") ?: "order_placed"
+    val trackingStep = getLong("trackingStep")?.toInt() ?: orderStatusToStep(orderStatus)
+
+    return ManagerOrderItem(
+        documentId = id,
+        orderId = getOrderIdText(),
+        buyerName = getString("buyerName") ?: "Buyer",
+        farmerName = getString("farmerName") ?: "Farmer",
+        productName = getString("productName")
+            ?: getString("name")
+            ?: "Product",
+        productEmoji = getString("productEmoji") ?: getProductEmoji(),
+        quantity = getString("quantity")
+            ?: getString("quantityText")
+            ?: "1",
+        amount = getAmountText(
+            keys = listOf(
+                "totalAmount",
+                "orderTotal",
+                "amount",
+                "subtotal"
+            )
+        ),
+        status = orderStatus.toManagerDisplayStatus(),
+        orderStatus = orderStatus,
+        trackingStep = trackingStep,
+        nodeVerificationDone = getBoolean("nodeVerificationDone") ?: (trackingStep >= 1),
+        qualityCheckDone = getBoolean("qualityCheckDone") ?: (trackingStep >= 2),
+        packagingDone = getBoolean("packagingDone") ?: (trackingStep >= 3),
+        dispatchPlanningDone = getBoolean("dispatchPlanningDone") ?: (trackingStep >= 4),
+        outForDeliveryDone = getBoolean("outForDeliveryDone") ?: (trackingStep >= 5),
+        deliveredDone = getBoolean("deliveredDone") ?: (trackingStep >= 6),
+        pickupNode = getString("pickupNode")
+            ?: getString("agroNode")
+            ?: "Bhopal Agro Node 01",
+        dropPoint = getString("dropPoint")
+            ?: getString("deliveryAddress")
+            ?: getString("address")
+            ?: "Buyer Drop Point",
+        orderDate = getReadableDate()
+    )
+}
+
+private fun String.toManagerDisplayStatus(): String {
+    return when {
+        equals("out_for_delivery", ignoreCase = true) -> MANAGER_ORDER_STATUS_TRANSIT
+        equals("delivered", ignoreCase = true) -> MANAGER_ORDER_STATUS_DELIVERED
+        else -> MANAGER_ORDER_STATUS_READY
+    }
+}
+
+private fun orderStatusToStep(
+    orderStatus: String
+): Int {
+    return when {
+        orderStatus.equals("agro_node_verified", ignoreCase = true) -> 1
+        orderStatus.equals("quality_checked", ignoreCase = true) -> 2
+        orderStatus.equals("packaging", ignoreCase = true) -> 3
+        orderStatus.equals("dispatch_planned", ignoreCase = true) -> 4
+        orderStatus.equals("out_for_delivery", ignoreCase = true) -> 5
+        orderStatus.equals("delivered", ignoreCase = true) -> 6
+        orderStatus.equals("completed", ignoreCase = true) -> 6
+        else -> 0
+    }
+}
+
+private fun DocumentSnapshot.getOrderIdText(): String {
+    val rawOrderId = getString("orderId") ?: id.takeLast(6).uppercase()
+
+    return if (rawOrderId.startsWith("#")) {
+        rawOrderId
+    } else {
+        "#$rawOrderId"
+    }
+}
+
+private fun DocumentSnapshot.getAmountText(
+    keys: List<String>
+): String {
+    keys.forEach { key ->
+        val value = get(key)
+
+        when (value) {
+            is Number -> return "₹${value.toDouble().roundToInt()}"
+
+            is String -> {
+                return if (value.startsWith("₹")) {
+                    value
+                } else {
+                    "₹$value"
+                }
+            }
+        }
+    }
+
+    return "₹0"
+}
+
+private fun DocumentSnapshot.getProductEmoji(): String {
+    val productName = (
+            getString("productName")
+                ?: getString("name")
+                ?: ""
+            ).lowercase()
+
+    return when {
+        productName.contains("rice") -> "🍚"
+        productName.contains("tomato") -> "🍅"
+        productName.contains("capsicum") -> "🫑"
+        productName.contains("wheat") -> "🌾"
+        productName.contains("grain") -> "🌾"
+        else -> "📦"
+    }
+}
+
+private fun DocumentSnapshot.getReadableDate(): String {
+    val rawCreatedAt = get("createdAt")
+
+    return when (rawCreatedAt) {
+        is Timestamp -> {
+            try {
+                SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(rawCreatedAt.toDate())
+            } catch (exception: Exception) {
+                "Today"
+            }
+        }
+
+        is Number -> {
+            try {
+                SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(rawCreatedAt.toLong())
+            } catch (exception: Exception) {
+                "Today"
+            }
+        }
+
+        is String -> rawCreatedAt.ifBlank { "Today" }
+
+        else -> "Today"
+    }
 }

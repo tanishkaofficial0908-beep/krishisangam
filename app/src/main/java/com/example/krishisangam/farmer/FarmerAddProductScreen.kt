@@ -1,3 +1,4 @@
+// FarmerAddProductScreen.kt
 package com.example.krishisangam.farmer
 
 import androidx.compose.foundation.BorderStroke
@@ -358,6 +359,12 @@ fun FarmerAddProductScreen(
                                         onSuccess = {
                                             isSubmitting = false
                                             showSuccessMessage = true
+
+                                            FarmerNotificationStore.addNotification(
+                                                title = "Product Listing Sent",
+                                                message = "Your product listing has been sent to Agro Node Manager. Manager will approve or reject it after verification.",
+                                                icon = "🌱"
+                                            )
                                         },
                                         onError = { error ->
                                             isSubmitting = false
@@ -941,6 +948,9 @@ fun StepItem(
         )
     }
 }
+
+/* Remaining UI functions unchanged (ProductInfoStep, PhotosStep, SuccessListedCard, CategoryOption, PhotoBox,
+   FieldLabel, AppInputField, PrimaryActionButton, SecondaryActionButton, ErrorBox) */
 
 @Composable
 fun ProductInfoStep(

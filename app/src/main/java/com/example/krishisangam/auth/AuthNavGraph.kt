@@ -15,6 +15,7 @@ import com.example.krishisangam.buyer.BuyerDashboardScreen
 import com.example.krishisangam.farmer.FarmerDashboardScreen
 import com.example.krishisangam.manager.ManagerDashboardScreen
 import com.example.krishisangam.transportation.TransportationDashboardScreen
+import com.google.firebase.auth.FirebaseAuth
 
 object AuthRoutes {
     const val ROLE = "role"
@@ -26,7 +27,7 @@ object AuthRoutes {
     const val FARMER_HOME = "farmer_home"
     const val BUYER_HOME = "buyer_home"
     const val MANAGER_HOME = "manager_home"
-    const val TRANSPORT_HOME = "transport_home"
+    const val TRANSPORTATION_HOME = "transportation_home"
 }
 
 @Composable
@@ -53,9 +54,8 @@ fun AuthNavGraph() {
                     navController.navigate(AuthRoutes.LOGIN)
                 },
                 onTransportClick = {
-                    navController.navigate(AuthRoutes.TRANSPORT_HOME) {
-                        launchSingleTop = true
-                    }
+                    authViewModel.selectRole(UserRole.TRANSPORTATION)
+                    navController.navigate(AuthRoutes.LOGIN)
                 }
             )
         }
@@ -123,10 +123,9 @@ fun AuthNavGraph() {
         composable(AuthRoutes.BUYER_HOME) {
             BuyerDashboardScreen(
                 onLogout = {
-                    authViewModel.signOut()
-
+                    FirebaseAuth.getInstance().signOut()
                     navController.navigate(AuthRoutes.ROLE) {
-                        popUpTo(AuthRoutes.BUYER_HOME) {
+                        popUpTo(0) {
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -136,14 +135,34 @@ fun AuthNavGraph() {
         }
 
         composable(AuthRoutes.FARMER_HOME) {
-            FarmerDashboardScreen()
+            FarmerDashboardScreen(
+                onLogout = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate(AuthRoutes.ROLE) {
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
 
         composable(AuthRoutes.MANAGER_HOME) {
-            ManagerDashboardScreen()
+            ManagerDashboardScreen(
+                onLogout = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate(AuthRoutes.ROLE) {
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
 
-        composable(AuthRoutes.TRANSPORT_HOME) {
+        composable(AuthRoutes.TRANSPORTATION_HOME) {
             TransportationDashboardScreen()
         }
     }
@@ -174,6 +193,15 @@ private fun navigateToDashboard(
 
         UserRole.NODE_MANAGER -> {
             navController.navigate(AuthRoutes.MANAGER_HOME) {
+                popUpTo(AuthRoutes.ROLE) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+        }
+
+        UserRole.TRANSPORTATION -> {
+            navController.navigate(AuthRoutes.TRANSPORTATION_HOME) {
                 popUpTo(AuthRoutes.ROLE) {
                     inclusive = true
                 }

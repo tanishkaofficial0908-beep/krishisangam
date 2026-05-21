@@ -67,9 +67,18 @@ data class FarmerHomeInfo(
 
 @Composable
 fun FarmerHomeScreen(
+    totalProducts: Int = 0,
+    approvedProducts: Int = 0,
+    pendingProducts: Int = 0,
+    activeOrders: Int = 0,
+    completedOrders: Int = 0,
+    totalEarnings: Int = 0,
+    pendingPayment: Int = 0,
+    isDashboardLoading: Boolean = false,
     onProductsClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onEarningsClick: () -> Unit
+    onEarningsClick: () -> Unit,
+    onNotificationClick: () -> Unit
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val farmerName = currentUser?.displayName ?: stringResource(R.string.farmer)
@@ -124,11 +133,7 @@ fun FarmerHomeScreen(
             FarmerTopHeader(
                 farmerName = farmerName,
                 onNotificationClick = {
-                    selectedInfo = FarmerHomeInfo(
-                        title = "Notifications",
-                        emoji = "🔔",
-                        message = "No new farmer notifications yet. Product approval, order updates, and payment alerts will appear here."
-                    )
+                    onNotificationClick()
                 },
                 onHelpClick = {
                     selectedInfo = FarmerHomeInfo(
@@ -165,8 +170,8 @@ fun FarmerHomeScreen(
             ) {
                 FarmerStatCard(
                     title = stringResource(R.string.total_products),
-                    value = "10",
-                    subtitle = stringResource(R.string.approved_pending_summary, 1, 9),
+                    value = totalProducts.toString(),
+                    subtitle = "$approvedProducts approved • $pendingProducts pending",
                     icon = "🌱",
                     modifier = Modifier.weight(1f),
                     onClick = {
@@ -176,8 +181,8 @@ fun FarmerHomeScreen(
 
                 FarmerStatCard(
                     title = stringResource(R.string.active_orders),
-                    value = "4",
-                    subtitle = stringResource(R.string.completed_count, 2),
+                    value = activeOrders.toString(),
+                    subtitle = "$completedOrders completed",
                     icon = "📦",
                     modifier = Modifier.weight(1f),
                     onClick = {
@@ -194,7 +199,7 @@ fun FarmerHomeScreen(
             ) {
                 FarmerStatCard(
                     title = stringResource(R.string.total_earnings),
-                    value = "₹8,200",
+                    value = "₹$totalEarnings",
                     subtitle = stringResource(R.string.completed_orders),
                     icon = "💰",
                     modifier = Modifier.weight(1f),
@@ -205,7 +210,7 @@ fun FarmerHomeScreen(
 
                 FarmerStatCard(
                     title = stringResource(R.string.pending_payment),
-                    value = "₹4,100",
+                    value = "₹$pendingPayment",
                     subtitle = stringResource(R.string.after_delivery),
                     icon = "⏳",
                     modifier = Modifier.weight(1f),
@@ -349,6 +354,9 @@ fun FarmerTopHeader(
         }
     }
 }
+
+/* Remaining UI functions unchanged (FarmerStatCard, FarmerHomeTrustScoreCard, FarmerRecentOrdersCard, FarmerOrderRow,
+   FarmerProductStatusCard, FarmerProductStatusRow, FarmerHomeInfoDialog) */
 
 @Composable
 fun FarmerStatCard(

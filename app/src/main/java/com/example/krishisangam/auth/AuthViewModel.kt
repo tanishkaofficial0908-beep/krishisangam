@@ -18,7 +18,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 enum class UserRole {
     BUYER,
     FARMER,
-    NODE_MANAGER
+    NODE_MANAGER,
+    TRANSPORTATION
 }
 
 data class AuthUiState(

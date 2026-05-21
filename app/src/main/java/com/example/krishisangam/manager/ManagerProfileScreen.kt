@@ -59,10 +59,10 @@ private val RedText = Color(0xFFFF6B6B)
 
 @Composable
 fun ManagerProfileScreen(
-    onVerificationClick: () -> Unit,
-    onOrdersClick: () -> Unit,
-    onPaymentsClick: () -> Unit,
-    onFarmersClick: () -> Unit
+    onLogoutConfirm: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
+    onNodeDetailsClick: () -> Unit = {}
+
 ) {
     val context = LocalContext.current
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -76,6 +76,10 @@ fun ManagerProfileScreen(
     }
 
     var showLogoutDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var showHelpDialog by remember {
         mutableStateOf(false)
     }
 
@@ -97,6 +101,7 @@ fun ManagerProfileScreen(
                     onClick = {
                         showLogoutDialog = false
                         FirebaseAuth.getInstance().signOut()
+                        onLogoutConfirm()
                     }
                 ) {
                     Text(
@@ -143,6 +148,18 @@ fun ManagerProfileScreen(
                         lineHeight = 20.sp
                     )
                 }
+            }
+        )
+    }
+
+
+    if (showHelpDialog) {
+        ManagerProfileInfoDialog(
+            title = "Help & Support",
+            emoji = "🛟",
+            message = "Contact Krishi Sangam support for account, verification, order or payout related help.",
+            onDismiss = {
+                showHelpDialog = false
             }
         )
     }
@@ -227,44 +244,33 @@ fun ManagerProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             ManagerProfileOptionCard(
-                icon = "✅",
-                title = stringResource(R.string.verifications),
-                subtitle = stringResource(R.string.review_farmer_listings),
+                icon = "✏️",
+                title = "Edit Profile",
+                subtitle = "Update manager name and contact details",
                 onClick = {
-                    onVerificationClick()
+                    onEditProfileClick()
                 }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             ManagerProfileOptionCard(
-                icon = "📦",
-                title = stringResource(R.string.orders),
-                subtitle = stringResource(R.string.manage_orders_dispatch),
+                icon = "🏢",
+                title = "Node Details",
+                subtitle = "Manage Agro Node center details",
                 onClick = {
-                    onOrdersClick()
+                    onNodeDetailsClick()
                 }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             ManagerProfileOptionCard(
-                icon = "💳",
-                title = stringResource(R.string.payments),
-                subtitle = stringResource(R.string.track_payments_payouts),
+                icon = "🛟",
+                title = "Help & Support",
+                subtitle = "Contact Krishi Sangam support",
                 onClick = {
-                    onPaymentsClick()
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ManagerProfileOptionCard(
-                icon = "🧑‍🌾",
-                title = stringResource(R.string.farmers),
-                subtitle = stringResource(R.string.view_farmer_directory),
-                onClick = {
-                    onFarmersClick()
+                    showHelpDialog = true
                 }
             )
 
@@ -541,4 +547,59 @@ fun ManagerLogoutCard(
             }
         }
     }
+}
+
+@Composable
+fun ManagerProfileInfoDialog(
+    title: String,
+    emoji: String,
+    message: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {
+            onDismiss()
+        },
+        containerColor = DialogGreen,
+        titleContentColor = TextLight,
+        textContentColor = DialogText,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text(
+                    text = "OK",
+                    color = AccentYellow,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        title = {
+            Text(
+                text = title,
+                color = TextLight,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 22.sp
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = emoji,
+                    fontSize = 36.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = message,
+                    color = DialogText,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+            }
+        }
+    )
 }
